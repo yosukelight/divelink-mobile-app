@@ -2,21 +2,25 @@
 
 Backend: Supabase (PostgreSQL 15). All tables use UUIDs and `created_at` / `updated_at` timestamps. Row-Level Security (RLS) is enabled on every user-data table.
 
+## Scope boundary
+
+This schema stores only data that is **native to this app** — dive logs, gamification state, quiz progress, and knowledge content. It does not replicate:
+
+- User identity (name, email, CMAS membership number) → read from the dive-link REST API on session start
+- CMAS certification records → read from the dive-link REST API; referenced here only as a foreign key value (`divelink_user_id`)
+- Instructor/diver role → derived from the dive-link JWT payload (`roles` claim) on each session
+- Formal instructor–diver certification relationships → managed by dive-link; out of scope here
+
+The primary key in the `profiles` table (`id`) equals the dive-link user UUID from the JWT `sub` claim, creating an implicit foreign key into the dive-link identity system without duplicating identity data.
+
 ---
 
 ## Enums
 
 ```sql
-CREATE TYPE user_role AS ENUM ('diver', 'instructor');
-
-CREATE TYPE cert_level AS ENUM (
-  'none',
-  'open_water',
-  'advanced',
-  'rescue',
-  'divemaster',
-  'instructor'
-);
+-- cert_level and user_role enums are intentionally absent.
+-- Role and certification data come from the dive-link API and are
+-- not stored in this database to avoid duplication.
 
 CREATE TYPE card_type AS ENUM ('do', 'dont');
 
@@ -44,29 +48,28 @@ CREATE TYPE achievement_trigger_type AS ENUM (
 ## Core Tables
 
 ### `profiles`
-Extends Supabase Auth `auth.users`. One row per user.
+App-specific state for each user. `id` equals the dive-link user UUID (from JWT `sub`). Identity
+fields (display name, email, certification level, role) are NOT stored here — they are fetched
+from the dive-link API on each authenticated session and held in the `authStore` in memory only.
 
 ```sql
 CREATE TABLE profiles (
-  id              UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  display_name    TEXT NOT NULL,
-  avatar_url      TEXT,
-  role            user_role NOT NULL DEFAULT 'diver',
-  cert_level      cert_level NOT NULL DEFAULT 'none',
-  home_club       TEXT,
-  xp              INTEGER NOT NULL DEFAULT 0,
-  level           INTEGER NOT NULL DEFAULT 0,
-  streak_days     INTEGER NOT NULL DEFAULT 0,
-  streak_last_active DATE,
-  total_dives     INTEGER NOT NULL DEFAULT 0,
-  unit_pref       unit_preference NOT NULL DEFAULT 'metric',
-  leaderboard_opt_in BOOLEAN NOT NULL DEFAULT FALSE,
-  notif_time      TIME NOT NULL DEFAULT '08:00:00',
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                  UUID PRIMARY KEY,   -- dive-link user UUID; not an FK to auth.users
+  xp                  INTEGER NOT NULL DEFAULT 0,
+  level               INTEGER NOT NULL DEFAULT 0,
+  streak_days         INTEGER NOT NULL DEFAULT 0,
+  streak_last_active  DATE,
+  total_dives         INTEGER NOT NULL DEFAULT 0,
+  unit_pref           unit_preference NOT NULL DEFAULT 'metric',
+  leaderboard_opt_in  BOOLEAN NOT NULL DEFAULT FALSE,
+  notif_time          TIME NOT NULL DEFAULT '08:00:00',
+  expo_push_token     TEXT,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- RLS: users can read their own row; instructors can read rows of enrolled students
+-- RLS: row is owned by the dive-link user whose UUID matches the JWT sub claim.
+-- Supabase auth.uid() is configured to return the dive-link UUID via a custom JWT secret.
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Own profile" ON profiles
@@ -75,7 +78,7 @@ CREATE POLICY "Own profile" ON profiles
 CREATE POLICY "Instructor reads student profiles" ON profiles
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM student_enrollments
+      SELECT 1 FROM learning_groups
       WHERE instructor_id = auth.uid() AND student_id = profiles.id
     )
   );
@@ -115,7 +118,7 @@ CREATE POLICY "Own dive logs" ON dive_logs
 CREATE POLICY "Instructor reads student logs" ON dive_logs
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM student_enrollments
+      SELECT 1 FROM learning_groups
       WHERE instructor_id = auth.uid() AND student_id = dive_logs.user_id
     )
   );
@@ -137,7 +140,6 @@ CREATE TABLE dive_sites (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Public read, no RLS
 ALTER TABLE dive_sites ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read" ON dive_sites FOR SELECT USING (TRUE);
 ```
@@ -149,18 +151,24 @@ CREATE POLICY "Public read" ON dive_sites FOR SELECT USING (TRUE);
 ### `knowledge_cards`
 Seeded content — not user-created.
 
+`min_cert_tier` is a simplified numeric tier (0=any, 1=1-star, 2=2-star, 3=3-star) that maps to
+CMAS star ratings. The mapping from a user's dive-link CertificationLevel to a tier number is
+maintained in `data/cert-levels.ts` in the app.
+
 ```sql
 CREATE TABLE knowledge_cards (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   type            card_type NOT NULL,
   category        TEXT NOT NULL,
-  min_cert_level  cert_level NOT NULL DEFAULT 'none',
+  min_cert_tier   SMALLINT NOT NULL DEFAULT 0,   -- 0=any, 1=1-star, 2=2-star, 3=3-star
   title           TEXT NOT NULL,
   body            TEXT NOT NULL,
   explanation     TEXT NOT NULL,
   tags            TEXT[] NOT NULL DEFAULT '{}',
   is_active       BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  CONSTRAINT valid_cert_tier CHECK (min_cert_tier BETWEEN 0 AND 3)
 );
 
 ALTER TABLE knowledge_cards ENABLE ROW LEVEL SECURITY;
@@ -181,12 +189,13 @@ CREATE TABLE quiz_questions (
   correct_index   SMALLINT NOT NULL,    -- 0-3
   explanation     TEXT NOT NULL,
   difficulty      difficulty NOT NULL DEFAULT 'medium',
-  min_cert_level  cert_level NOT NULL DEFAULT 'none',
+  min_cert_tier   SMALLINT NOT NULL DEFAULT 0,
   is_active       BOOLEAN NOT NULL DEFAULT TRUE,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   CONSTRAINT options_length CHECK (array_length(options, 1) = 4),
-  CONSTRAINT valid_correct_index CHECK (correct_index BETWEEN 0 AND 3)
+  CONSTRAINT valid_correct_index CHECK (correct_index BETWEEN 0 AND 3),
+  CONSTRAINT valid_cert_tier CHECK (min_cert_tier BETWEEN 0 AND 3)
 );
 
 ALTER TABLE quiz_questions ENABLE ROW LEVEL SECURITY;
@@ -240,7 +249,7 @@ CREATE POLICY "Own sessions" ON quiz_sessions
 CREATE POLICY "Instructor reads student sessions" ON quiz_sessions
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM student_enrollments
+      SELECT 1 FROM learning_groups
       WHERE instructor_id = auth.uid() AND student_id = quiz_sessions.user_id
     )
   );
@@ -348,12 +357,19 @@ CREATE POLICY "Own XP events" ON xp_events
 
 ---
 
-## Instructor Tables
+## Instructor Learning Tables
 
-### `student_enrollments`
+These tables support the in-app learning management features (EP-12). They represent informal
+practice groupings and are explicitly **not** a replacement for the formal instructor–diver
+certification relationships managed by dive-link. Instructor access to these tables is gated
+at the application layer by verifying an active instructor-grade CMAS certification via the
+dive-link API on session start.
+
+### `learning_groups`
+(Previously `student_enrollments` — renamed to make the informal nature explicit.)
 
 ```sql
-CREATE TABLE student_enrollments (
+CREATE TABLE learning_groups (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   instructor_id   UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   student_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -362,19 +378,20 @@ CREATE TABLE student_enrollments (
   UNIQUE (instructor_id, student_id)
 );
 
-ALTER TABLE student_enrollments ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Instructor manages enrollments" ON student_enrollments
+ALTER TABLE learning_groups ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Instructor manages groups" ON learning_groups
   FOR ALL USING (auth.uid() = instructor_id);
-CREATE POLICY "Student sees own enrollment" ON student_enrollments
+CREATE POLICY "Student sees own enrollment" ON learning_groups
   FOR SELECT USING (auth.uid() = student_id);
 ```
 
 ---
 
-### `instructor_assignments`
+### `learning_assignments`
+(Previously `instructor_assignments`.)
 
 ```sql
-CREATE TABLE instructor_assignments (
+CREATE TABLE learning_assignments (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   instructor_id   UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   student_id      UUID REFERENCES profiles(id) ON DELETE CASCADE,   -- NULL = whole group
@@ -384,16 +401,16 @@ CREATE TABLE instructor_assignments (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE instructor_assignments ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Instructor manages assignments" ON instructor_assignments
+ALTER TABLE learning_assignments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Instructor manages assignments" ON learning_assignments
   FOR ALL USING (auth.uid() = instructor_id);
-CREATE POLICY "Student sees own assignments" ON instructor_assignments
+CREATE POLICY "Student sees own assignments" ON learning_assignments
   FOR SELECT USING (auth.uid() = student_id OR (
     group_name IS NOT NULL AND EXISTS (
-      SELECT 1 FROM student_enrollments
-      WHERE instructor_id = instructor_assignments.instructor_id
+      SELECT 1 FROM learning_groups
+      WHERE instructor_id = learning_assignments.instructor_id
         AND student_id = auth.uid()
-        AND group_name = instructor_assignments.group_name
+        AND group_name = learning_assignments.group_name
     )
   ));
 ```
@@ -404,7 +421,7 @@ CREATE POLICY "Student sees own assignments" ON instructor_assignments
 
 ```sql
 CREATE TABLE assignment_completions (
-  assignment_id   UUID NOT NULL REFERENCES instructor_assignments(id) ON DELETE CASCADE,
+  assignment_id   UUID NOT NULL REFERENCES learning_assignments(id) ON DELETE CASCADE,
   student_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   completed_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   mastery_pct     NUMERIC(5,2),
@@ -417,19 +434,25 @@ CREATE POLICY "Student manages own completions" ON assignment_completions
 CREATE POLICY "Instructor reads student completions" ON assignment_completions
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM instructor_assignments ia
-      WHERE ia.id = assignment_completions.assignment_id
-        AND ia.instructor_id = auth.uid()
+      SELECT 1 FROM learning_assignments la
+      WHERE la.id = assignment_completions.assignment_id
+        AND la.instructor_id = auth.uid()
     )
   );
 ```
 
 ---
 
-### `skill_signoffs`
+### `practice_signoffs`
+(Previously `skill_signoffs` — renamed and scoped to make it clear these are informal.)
+
+Records an instructor's acknowledgment that a student has practised a specific skill in the
+app context. These carry **no CMAS authority** and must not be presented to the student as a
+CMAS certification or formal qualification. Formal CMAS certifications are issued exclusively
+via dive-link by an authorized instructor through the federation approval workflow.
 
 ```sql
-CREATE TABLE skill_signoffs (
+CREATE TABLE practice_signoffs (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   instructor_id   UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
   student_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -439,12 +462,12 @@ CREATE TABLE skill_signoffs (
   UNIQUE (instructor_id, student_id, skill_slug)
 );
 
-ALTER TABLE skill_signoffs ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Instructor creates signoffs" ON skill_signoffs
+ALTER TABLE practice_signoffs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Instructor creates signoffs" ON practice_signoffs
   FOR INSERT WITH CHECK (auth.uid() = instructor_id);
-CREATE POLICY "Instructor reads own signoffs" ON skill_signoffs
+CREATE POLICY "Instructor reads own signoffs" ON practice_signoffs
   FOR SELECT USING (auth.uid() = instructor_id);
-CREATE POLICY "Student reads own signoffs" ON skill_signoffs
+CREATE POLICY "Student reads own signoffs" ON practice_signoffs
   FOR SELECT USING (auth.uid() = student_id);
 ```
 
@@ -514,19 +537,24 @@ LANGUAGE sql SECURITY DEFINER AS $$
 $$;
 ```
 
-### RPC: `due_quiz_questions(p_user_id UUID, p_limit INT)`
-Returns questions due for review, ordered by SM-2 priority, filtered by cert level.
+### RPC: `due_quiz_questions(p_user_id UUID, p_user_cert_tier INT, p_limit INT)`
+Returns questions due for review, ordered by SM-2 priority, filtered by cert tier.
+The cert tier is passed in from the app (sourced from the dive-link API) rather than
+read from a local `cert_level` column.
 
 ```sql
-CREATE OR REPLACE FUNCTION due_quiz_questions(p_user_id UUID, p_limit INT DEFAULT 5)
+CREATE OR REPLACE FUNCTION due_quiz_questions(
+  p_user_id       UUID,
+  p_user_cert_tier INT,
+  p_limit         INT DEFAULT 5
+)
 RETURNS SETOF quiz_questions
 LANGUAGE sql SECURITY DEFINER AS $$
   SELECT qq.*
   FROM quiz_questions qq
   LEFT JOIN user_card_progress ucp ON ucp.card_id = qq.card_id AND ucp.user_id = p_user_id
-  JOIN profiles p ON p.id = p_user_id
   WHERE qq.is_active = TRUE
-    AND qq.min_cert_level::TEXT <= p.cert_level::TEXT
+    AND qq.min_cert_tier <= p_user_cert_tier
     AND (ucp.next_review IS NULL OR ucp.next_review <= CURRENT_DATE)
   ORDER BY COALESCE(ucp.next_review, '2000-01-01') ASC, RANDOM()
   LIMIT p_limit;
@@ -547,7 +575,7 @@ CREATE INDEX idx_card_progress_next_review ON user_card_progress (user_id, next_
 
 -- Knowledge base browsing
 CREATE INDEX idx_knowledge_cards_category ON knowledge_cards (category, type);
-CREATE INDEX idx_knowledge_cards_cert_level ON knowledge_cards (min_cert_level);
+CREATE INDEX idx_knowledge_cards_cert_tier ON knowledge_cards (min_cert_tier);
 
 -- Full-text search on knowledge cards
 CREATE INDEX idx_knowledge_cards_fts ON knowledge_cards
@@ -557,8 +585,8 @@ CREATE INDEX idx_knowledge_cards_fts ON knowledge_cards
 CREATE INDEX idx_profiles_xp ON profiles (xp DESC) WHERE leaderboard_opt_in = TRUE;
 
 -- Instructor tools
-CREATE INDEX idx_enrollments_instructor ON student_enrollments (instructor_id);
-CREATE INDEX idx_assignments_student ON instructor_assignments (student_id);
+CREATE INDEX idx_learning_groups_instructor ON learning_groups (instructor_id);
+CREATE INDEX idx_learning_assignments_student ON learning_assignments (student_id);
 ```
 
 ---
@@ -567,5 +595,5 @@ CREATE INDEX idx_assignments_student ON instructor_assignments (student_id);
 
 | Bucket | Access | Purpose |
 |---|---|---|
-| `avatars` | Authenticated read; owner write | User profile photos |
+| `avatars` | Authenticated read; owner write | User profile photos (app-specific; dive-link has its own photo storage) |
 | `dive-photos` | Authenticated read; owner write | Photos attached to dive logs |

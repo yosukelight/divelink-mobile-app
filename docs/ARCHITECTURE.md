@@ -14,17 +14,28 @@
 ├─────────────────────────────────────────┤
 │         Local Persistence               │
 │  MMKV (fast KV) · Expo SecureStore     │
+│  (access token + refresh token)         │
 ├─────────────────────────────────────────┤
 │         Notifications                   │
 │  Expo Notifications (local + push)      │
-├─────────────────────────────────────────┤
-│             Backend (Supabase)          │
-│  PostgreSQL 15 · PostgREST             │
-│  Auth (JWT) · Realtime (WS)            │
-│  Storage (S3-compatible)               │
-│  Edge Functions (Deno)                 │
-└─────────────────────────────────────────┘
+├──────────────────┬──────────────────────┤
+│  dive-link API   │  Supabase            │
+│  (REST / JWT)    │  (PostgreSQL 15)     │
+│                  │                      │
+│  • Auth          │  • Dive logs         │
+│  • User identity │  • Quiz progress     │
+│  • Certifications│  • Gamification      │
+│  • Instructor    │  • Knowledge content │
+│    credentials   │  • Push tokens       │
+│  • Public data   │  • App preferences   │
+│    (events,      │                      │
+│     cert verify) │                      │
+└──────────────────┴──────────────────────┘
 ```
+
+**Two-backend design:**
+- **dive-link REST API** is the identity and credentialing source of truth. The mobile app authenticates against it, reads user profiles and certifications from it, and uses it for public features (event calendar, certificate verification, world records). The app never writes certification data to dive-link — that happens through the dive-link web app.
+- **Supabase** holds everything intrinsic to this app: dive logs, gamification state, quiz progress, knowledge content. It does not duplicate any data that dive-link owns.
 
 ---
 
@@ -38,12 +49,8 @@ divelink-mobile-app/
 │   ├── (auth)/                     # Unauthenticated screens
 │   │   ├── _layout.tsx
 │   │   ├── index.tsx               # Welcome / splash
-│   │   ├── login.tsx
-│   │   ├── signup.tsx
-│   │   ├── forgot-password.tsx
+│   │   ├── login.tsx               # Calls dive-link /auth/login
 │   │   └── onboarding/
-│   │       ├── role.tsx
-│   │       ├── cert-level.tsx
 │   │       ├── notifications.tsx
 │   │       └── carousel.tsx
 │   │
@@ -74,12 +81,12 @@ divelink-mobile-app/
 │   │       │       └── edit.tsx
 │   │       ├── profile/
 │   │       │   ├── index.tsx
-│   │       │   ├── edit.tsx
+│   │       │   ├── edit.tsx        # Edits app-specific fields only; identity edits go to dive-link
 │   │       │   ├── badges.tsx
 │   │       │   ├── stats.tsx
 │   │       │   ├── leaderboard.tsx
 │   │       │   └── settings.tsx
-│   │       └── instructor/
+│   │       └── instructor/         # Gated: visible only if authStore.identity.is_instructor
 │   │           ├── index.tsx
 │   │           ├── groups/
 │   │           │   ├── new.tsx
@@ -92,7 +99,7 @@ divelink-mobile-app/
 │   │                   ├── index.tsx
 │   │                   ├── assign.tsx
 │   │                   ├── notify.tsx
-│   │                   └── signoff.tsx
+│   │                   └── practice-signoff.tsx
 │   │
 │   └── modal/
 │       ├── achievement-unlock.tsx
@@ -101,31 +108,31 @@ divelink-mobile-app/
 │
 ├── components/
 │   ├── gamification/
-│   │   ├── XpBar.tsx               # Animated XP progress bar
-│   │   ├── XpPop.tsx               # Floating "+50 XP" pop animation
-│   │   ├── StreakBadge.tsx         # Flame icon + count
-│   │   ├── LevelChip.tsx           # Level name pill
-│   │   └── AchievementCard.tsx     # Badge unlock modal content
+│   │   ├── XpBar.tsx
+│   │   ├── XpPop.tsx
+│   │   ├── StreakBadge.tsx
+│   │   ├── LevelChip.tsx
+│   │   └── AchievementCard.tsx
 │   ├── quiz/
-│   │   ├── QuestionCard.tsx        # Multi-choice question display
-│   │   ├── FlashCard.tsx           # Flip card with Reanimated
-│   │   ├── AnswerTile.tsx          # Option button (correct/wrong states)
-│   │   ├── QuizProgress.tsx        # Question N of M bar
-│   │   └── ResultRow.tsx           # Per-question result in summary
+│   │   ├── QuestionCard.tsx
+│   │   ├── FlashCard.tsx
+│   │   ├── AnswerTile.tsx
+│   │   ├── QuizProgress.tsx
+│   │   └── ResultRow.tsx
 │   ├── knowledge/
-│   │   ├── KnowledgeCard.tsx       # Card row for list views
-│   │   ├── CategoryGrid.tsx        # Category browser grid
-│   │   ├── MasteryRing.tsx         # Circular mastery % indicator
-│   │   └── TypeBadge.tsx           # DO / DON'T pill
+│   │   ├── KnowledgeCard.tsx
+│   │   ├── CategoryGrid.tsx
+│   │   ├── MasteryRing.tsx
+│   │   └── TypeBadge.tsx
 │   ├── dive-log/
-│   │   ├── DiveCard.tsx            # Dive list row
-│   │   ├── DiveForm.tsx            # Full log entry form
-│   │   ├── PhotoPicker.tsx         # Multi-photo picker + upload
-│   │   ├── SiteAutocomplete.tsx    # Dive site search input
-│   │   └── DiveStats.tsx           # Single dive stat chips
+│   │   ├── DiveCard.tsx
+│   │   ├── DiveForm.tsx
+│   │   ├── PhotoPicker.tsx
+│   │   ├── SiteAutocomplete.tsx
+│   │   └── DiveStats.tsx
 │   ├── checklist/
-│   │   ├── ChecklistSection.tsx    # BWRAF section with sub-items
-│   │   └── ChecklistProgress.tsx   # Step indicator
+│   │   ├── ChecklistSection.tsx
+│   │   └── ChecklistProgress.tsx
 │   ├── instructor/
 │   │   ├── StudentRow.tsx
 │   │   ├── AssignmentCard.tsx
@@ -136,13 +143,13 @@ divelink-mobile-app/
 │       ├── Input.tsx
 │       ├── Modal.tsx
 │       ├── BottomSheet.tsx
-│       ├── Skeleton.tsx            # Loading placeholder
+│       ├── Skeleton.tsx
 │       ├── EmptyState.tsx
 │       ├── OfflineBanner.tsx
 │       └── Avatar.tsx
 │
 ├── stores/
-│   ├── authStore.ts                # session, user profile, role
+│   ├── authStore.ts                # dive-link session + user identity + certifications
 │   ├── quizStore.ts                # active session, answers, SM-2 queue
 │   ├── logStore.ts                 # dive log list, pending offline entries
 │   ├── gamificationStore.ts        # XP, level, streak, pending achievements
@@ -153,10 +160,11 @@ divelink-mobile-app/
 │   ├── useOnlineStatus.ts          # NetInfo connectivity
 │   ├── useAchievementChecker.ts    # run checks after key events
 │   ├── useNotifications.ts         # schedule/cancel local notifications
-│   └── useSupabaseQuery.ts         # typed query wrapper with error handling
+│   └── useSupabaseQuery.ts         # typed Supabase query wrapper
 │
 ├── lib/
-│   ├── supabase.ts                 # Supabase client init
+│   ├── diveLinkApi.ts              # dive-link REST API client (auth, identity, certifications)
+│   ├── supabase.ts                 # Supabase client (dive logs, quiz, gamification)
 │   ├── sm2.ts                      # SM-2 spaced repetition algorithm
 │   ├── xp.ts                       # XP award + level calculation helpers
 │   ├── notifications.ts            # Expo Notifications wrappers
@@ -164,14 +172,15 @@ divelink-mobile-app/
 │   └── validators.ts               # Zod schemas for all forms
 │
 ├── data/
-│   ├── knowledge-cards.ts          # Seeded card definitions (TS source of truth)
+│   ├── knowledge-cards.ts          # Seeded card definitions
 │   ├── quiz-questions.ts           # Seeded question bank
 │   ├── achievements.ts             # Achievement definitions + trigger configs
 │   ├── bwraf.ts                    # Checklist section + sub-item definitions
-│   └── cert-levels.ts              # Cert level metadata (label, order, icon)
+│   └── cert-levels.ts              # Mapping from CMAS CertificationLevel to app cert tier (0–3)
 │
 ├── types/
 │   ├── database.ts                 # Auto-generated from Supabase CLI
+│   ├── divelink.ts                 # Types for dive-link API responses
 │   ├── app.ts                      # App-level types (not DB-tied)
 │   └── navigation.ts               # Route param types
 │
@@ -183,13 +192,13 @@ divelink-mobile-app/
 │       └── daily-briefing-cron/
 │
 ├── assets/
-│   ├── icons/                      # SVG badge icons
+│   ├── icons/
 │   ├── images/
 │   └── fonts/
 │
-├── app.json                        # Expo config
-├── eas.json                        # EAS Build / Submit config
-├── tailwind.config.js              # NativeWind config
+├── app.json
+├── eas.json
+├── tailwind.config.js
 └── tsconfig.json
 ```
 
@@ -202,12 +211,18 @@ Using **Zustand** with a clear separation of concerns. No single mega-store.
 ### `authStore`
 ```ts
 type AuthStore = {
-  session: Session | null
-  profile: Profile | null
+  // dive-link identity (fetched from dive-link API on sign-in)
+  identity: DiverIdentity | null    // display_name, email, cmas_membership_number, roles, certifications
+  accessToken: string | null        // dive-link JWT; stored in memory only
   isLoading: boolean
+
+  // app-specific profile (fetched from Supabase)
+  appProfile: AppProfile | null     // xp, level, streak, preferences
+
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
-  refreshProfile: () => Promise<void>
+  refreshToken: () => Promise<void>
+  refreshAppProfile: () => Promise<void>
 }
 ```
 
@@ -240,25 +255,42 @@ type QuizStore = {
 ### Auth flow
 ```
 App start
-  → Supabase.auth.getSession()
-  → If session: fetch profile → authStore → navigate to (app)
-  → If no session: navigate to (auth)
+  → SecureStore.getItemAsync('divelink_refresh_token')
+  → If token exists: POST /api/v1/auth/refresh (refresh token in body for native)
+      → Store new access token in authStore (memory)
+      → Store new refresh token in SecureStore
+      → GET /api/v1/divers/me → populate authStore.identity
+      → Fetch Supabase profile by id (= dive-link UUID) → populate authStore.appProfile
+      → Navigate to (app)
+  → If no token / refresh fails: navigate to (auth)
+```
+
+### Sign-in flow
+```
+User submits email + password
+  → POST /api/v1/auth/login to dive-link
+  → Store access token in authStore (memory)
+  → Store refresh token in SecureStore
+  → GET /api/v1/divers/me → authStore.identity
+  → Upsert Supabase profile row (id = dive-link UUID) → authStore.appProfile
+  → Navigate to (app) or onboarding if first sign-in
 ```
 
 ### Daily quiz flow
 ```
 User taps "Start Daily Quiz"
-  → call RPC due_quiz_questions(userId, 5)
+  → Derive cert_tier from authStore.identity.highest_active_certification
+  → Call RPC due_quiz_questions(userId, certTier, 5)
   → quizStore.startSession(questions)
   → Navigate to quiz/session
   → On each answer: quizStore.submitAnswer()
   → On session end:
-      → Insert quiz_session row
-      → Insert quiz_answers rows
-      → Update user_card_progress (SM-2)
+      → Insert quiz_session row (Supabase)
+      → Insert quiz_answers rows (Supabase)
+      → Update user_card_progress (SM-2) (Supabase)
       → gamificationStore.awardXp(50 + bonus, 'quiz')
       → gamificationStore.checkAchievements('quiz')
-      → Update streak in profiles
+      → Update streak in profiles (Supabase)
   → Navigate to quiz/results
 ```
 
@@ -272,8 +304,8 @@ User submits form
   → If offline: save to MMKV pending queue
   → If online:
       → Upload photos to Supabase Storage
-      → Insert dive_log row
-      → Increment profiles.total_dives
+      → Insert dive_log row (Supabase)
+      → Increment profiles.total_dives (Supabase)
       → gamificationStore.awardXp(75, 'dive_log')
       → gamificationStore.checkAchievements('dive_count')
   → Navigate to log/[id]
@@ -283,12 +315,57 @@ User submits form
 ```
 gamificationStore.checkAchievements(triggerType)
   → Filter achievements by trigger_type
-  → For each: evaluate trigger against current profile + event data
+  → For each: evaluate trigger against current appProfile + event data
   → If conditions met and not already in user_achievements:
-      → Insert user_achievements row
+      → Insert user_achievements row (Supabase)
       → Award badge XP
       → Add to pendingAchievements queue
   → UI polls pendingAchievements → shows modal one at a time
+```
+
+---
+
+## dive-link API Client
+
+`lib/diveLinkApi.ts` encapsulates all communication with the dive-link backend.
+
+```ts
+// lib/diveLinkApi.ts
+const BASE = process.env.EXPO_PUBLIC_DIVELINK_API_URL
+
+export const diveLinkApi = {
+  auth: {
+    login: (email: string, password: string) =>
+      fetch(`${BASE}/api/v1/auth/login`, { method: 'POST', body: JSON.stringify({ email, password }) }),
+
+    refresh: (refreshToken: string) =>
+      fetch(`${BASE}/api/v1/auth/refresh`, {
+        method: 'POST',
+        body: JSON.stringify({ refreshToken }),  // native: token in body, not cookie
+      }),
+
+    logout: (refreshToken: string) =>
+      fetch(`${BASE}/api/v1/auth/logout`, { method: 'POST', body: JSON.stringify({ refreshToken }) }),
+  },
+
+  divers: {
+    me: (accessToken: string) =>
+      fetch(`${BASE}/api/v1/divers/me`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+
+    certifications: (diverId: string, accessToken: string) =>
+      fetch(`${BASE}/api/v1/divers/${diverId}/certifications`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+  },
+
+  public: {
+    verifyCertificate: (token: string) =>
+      fetch(`${BASE}/api/v1/public/verify/${token}`),
+
+    events: (params?: URLSearchParams) =>
+      fetch(`${BASE}/api/v1/public/events?${params ?? ''}`),
+  },
+}
 ```
 
 ---
@@ -302,23 +379,7 @@ Uses a **local-first with sync** approach:
 3. **Quiz sessions** completed offline queue their DB writes locally. On reconnect, sessions are flushed before profile XP is updated.
 4. **Streak** — offline day still counts if a quiz session was completed locally. Synced to Supabase when back online.
 5. **Conflict resolution** — last-write-wins for dive logs. Quiz sessions are always additive (no conflict possible).
-
-```ts
-// useOnlineStatus.ts
-import NetInfo from '@react-native-community/netinfo'
-
-export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(true)
-  useEffect(() => {
-    return NetInfo.addEventListener(state => {
-      const online = !!state.isConnected && !!state.isInternetReachable
-      setIsOnline(online)
-      if (online) syncPendingEntries()
-    })
-  }, [])
-  return isOnline
-}
-```
+6. **dive-link API calls** (identity, certifications) require connectivity. Cached identity and cert tier are used offline; no writes to dive-link are possible offline.
 
 ---
 
@@ -367,21 +428,14 @@ Using **Expo Notifications** for both local scheduled notifications and remote p
 | Instructor assignment | Instructor app action | `send-instructor-push` |
 | Instructor message | Instructor compose screen | `send-instructor-push` |
 
-Push token stored in `profiles.expo_push_token`. Updated on each app open via `Notifications.getExpoPushTokenAsync()`.
-
-### `send-instructor-push` Edge Function
-```ts
-// supabase/functions/send-instructor-push/index.ts
-// Validates rate limit (1 push/student/day)
-// Calls Expo Push API
-// Inserts row into instructor_notifications
-```
+Push token stored in `profiles.expo_push_token` (Supabase). Updated on each app open.
 
 ---
 
 ## Environment Variables
 
 ```env
+EXPO_PUBLIC_DIVELINK_API_URL=     # dive-link backend base URL
 EXPO_PUBLIC_SUPABASE_URL=
 EXPO_PUBLIC_SUPABASE_ANON_KEY=
 ```
@@ -395,14 +449,15 @@ Sensitive keys (service role key) used only in Edge Functions and the seeding sc
 | Layer | Tool | Coverage target |
 |---|---|---|
 | Business logic (SM-2, XP, units) | Jest | 90%+ |
+| dive-link API client | Jest + msw | all endpoints used |
 | Store actions | Jest + msw | key flows |
 | UI components | React Native Testing Library | happy paths |
 | E2E critical paths | Detox | Auth, quiz, dive log |
 
 Critical paths for E2E:
-1. Sign up → onboarding → complete first quiz → see XP on Home
+1. Sign in via dive-link → see CMAS certifications on profile → complete first quiz → see XP on Home
 2. Start dive (checklist) → log dive → see in dive list
-3. Instructor: add student → assign module → student sees assignment
+3. Instructor: add student group → assign module → student sees assignment
 
 ---
 

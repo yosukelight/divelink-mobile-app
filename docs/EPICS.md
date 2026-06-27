@@ -2,6 +2,8 @@
 
 Each epic maps to a product capability. Stories are tracked in USER_STORIES.md.
 
+> **Architecture note:** This app uses two backends. User identity, certifications, and instructor credentials come from the **dive-link REST API** (the authoritative CMAS platform). App-specific data (dive logs, quiz progress, gamification state) lives in **Supabase**. Epics that touch identity or credentials delegate to dive-link; epics that are native to this app own their data in Supabase.
+
 ---
 
 ## EP-01 · Authentication & Onboarding
@@ -9,13 +11,15 @@ Each epic maps to a product capability. Stories are tracked in USER_STORIES.md.
 Get a user from zero to a personalized, ready-to-use account.
 
 **Scope**
-- Sign up / log in / forgot password
-- Role selection: Diver vs Instructor
-- Certification level selection
+- Sign in via dive-link REST API (`POST /api/v1/auth/login`); access token stored in memory, refresh token stored in Expo SecureStore (native equivalent of HttpOnly cookie)
+- No separate sign-up flow in this app — accounts are created on dive-link (or the dive-link web app); this app authenticates existing dive-link accounts
+- On session start: fetch user identity and certifications from dive-link; derive `is_instructor` flag from active instructor-grade certifications
 - Notification permission request
-- Onboarding carousel (what the app does, how streaks work)
+- Onboarding carousel (what the app does, how streaks work, how XP levels differ from CMAS certifications)
 
-**Exit criteria:** A new user can register, pick their role and cert level, and land on the home screen with their first daily briefing visible.
+**What is NOT in scope:** creating a parallel Supabase Auth account or storing a local `role` / `cert_level` — these are read from the dive-link API every session.
+
+**Exit criteria:** A user with an existing dive-link account can sign in, and the app displays their real CMAS certifications alongside their gamification state on the Home screen.
 
 ---
 
@@ -40,7 +44,7 @@ A searchable, categorized library of diving rules and safety facts.
 
 **Scope**
 - Cards organized by category (Pre-dive, Ascent, Emergency, Equipment, etc.)
-- Filter by cert level
+- Filter by CMAS cert tier (0–3, derived from the user's highest active certification fetched from dive-link)
 - Search by keyword
 - Card detail view with explanation
 - Favorite / bookmark cards
@@ -61,7 +65,7 @@ Active recall system that adapts to what each diver knows and doesn't know.
 - Daily quiz session (minimum 3 questions)
 - Quiz results screen with explanations
 - Per-question difficulty tracking
-- Cert-level-gated questions
+- Content gated by CMAS cert tier (fetched from dive-link, not a locally-stored enum)
 
 **Exit criteria:** A diver can complete a daily quiz, see which answers were wrong with explanations, and the system schedules those cards sooner next time.
 
@@ -73,7 +77,7 @@ The core gamification loop that keeps divers coming back daily.
 
 **Scope**
 - XP awarded for all learning and logging actions
-- Level system with named tiers
+- Level system with named tiers (in-app motivational construct, independent of CMAS certification levels)
 - Daily streak counter
 - Streak multiplier on XP
 - Streak danger alert at 8 PM if not yet active that day
@@ -126,6 +130,8 @@ Permanent record of every dive with rich metadata.
 - Dive list with filters (date range, site, buddy)
 - Share a dive summary (image card)
 
+**Note:** Dive logging is explicitly out of scope for dive-link (which is a certification and federation management system, not a dive logging app). Dive logs are owned entirely by this app's Supabase database.
+
 **Exit criteria:** A diver can log a complete dive entry with photos and retrieve it later; data persists across devices via Supabase.
 
 ---
@@ -140,7 +146,7 @@ Visual summary of a diver's overall progress and history.
 - Depth distribution histogram
 - Streak calendar (GitHub-style heatmap)
 - XP progression chart
-- Cert-level breakdown of quiz mastery
+- Cert-tier breakdown of quiz mastery
 
 **Exit criteria:** The stats screen renders accurate aggregates that update after each new dive log or quiz session.
 
@@ -151,15 +157,19 @@ Visual summary of a diver's overall progress and history.
 Personal identity and progress hub.
 
 **Scope**
-- Avatar upload
-- Display name, certification level, home dive club
-- Current level + XP bar to next level
-- Current streak
+- Avatar (stored in Supabase Storage; URL cached locally)
+- Display name and CMAS certifications fetched from dive-link API (read-only in this app — edits happen on dive-link)
+- Current in-app level + XP bar to next level (from Supabase)
+- Current streak (from Supabase)
 - Badge gallery (EP-06)
 - Link to dive log and stats
 - Settings: notification time, privacy (leaderboard opt-in), units (metric/imperial)
 
-**Exit criteria:** A diver's profile shows accurate level, XP, streak, and badges; settings are persisted.
+**Data source split:**
+- Identity and certifications → dive-link API (read-only)
+- XP, level, streak, badges, preferences → Supabase (owned by this app)
+
+**Exit criteria:** A diver's profile shows their real CMAS certifications alongside their in-app level, XP, streak, and badges; settings are persisted in Supabase.
 
 ---
 
@@ -178,20 +188,23 @@ Optional social layer to create friendly competition.
 
 ---
 
-## EP-12 · Instructor Dashboard
+## EP-12 · Instructor Learning Dashboard
 
-Tools for instructors to manage students and enforce learning.
+Tools for instructors to manage student learning progress within this app. This is a **learning management** feature, not a credentialing feature — formal CMAS certification issuance is handled exclusively by dive-link.
 
 **Scope**
-- Create and name student groups
+- Access gated on the user having at least one active instructor-grade CMAS certification, verified via dive-link API on session start
+- Create and name informal student learning groups (app-level grouping, not a CMAS instructor–diver federation relationship)
 - Add students by email or invite link
 - View per-student: quiz completion %, knowledge mastery %, last active date
-- Assign learning modules (quiz sets / knowledge categories) with optional due dates
+- Assign knowledge base categories (quiz sets) with optional due dates
 - Send targeted push notification to a student or whole group
-- Mark a skill as signed off (in-app endorsement)
-- Export student progress (CSV)
+- Track informal practice milestone sign-offs (e.g., "mask clearing practiced") — these are recorded in this app's Supabase database and carry no CMAS authority. They are not certifications and should not be presented as such.
+- Export student quiz progress (CSV)
 
-**Exit criteria:** An instructor can add students, assign a module, track their quiz scores, and send a push reminder — all without leaving the app.
+**What is NOT in scope:** Issuing, approving, or revoking CMAS certifications — those actions belong to dive-link.
+
+**Exit criteria:** An instructor (verified via dive-link) can add students, assign a learning module, track their quiz scores, and send a push reminder. Students see their assigned modules and practice sign-offs on their profile.
 
 ---
 
@@ -200,11 +213,11 @@ Tools for instructors to manage students and enforce learning.
 Core features work without an internet connection.
 
 **Scope**
-- Quiz questions cached locally with MMKV
-- Knowledge base cached on first load
+- Quiz questions and knowledge cards cached locally with MMKV
 - Dive log drafts saved locally and synced on reconnect
 - Offline badge: visual indicator when in offline mode
 - Sync conflict resolution (last-write-wins for logs)
+- dive-link API calls (identity, certifications) require connectivity; cached values used when offline
 
 **Exit criteria:** A diver can complete a quiz and log a dive while offline; data syncs automatically when connectivity resumes.
 
@@ -217,10 +230,10 @@ Admin tooling to maintain the knowledge base and quiz bank.
 **Scope**
 - Supabase dashboard seeding scripts
 - JSON schema for knowledge cards and quiz questions
-- Cert-level tagging and category taxonomy
+- Cert-tier tagging (0–3) and category taxonomy
 - Versioned content releases (so OTA app updates aren't required for new cards)
 
-**Exit criteria:** New knowledge cards and quiz questions can be added to the database without a new app release.
+**Exit criteria:** New knowledge cards and quiz questions can be added to the Supabase database without a new app release.
 
 ---
 
@@ -239,6 +252,6 @@ Admin tooling to maintain the knowledge base and quiz bank.
 | EP-06 Achievement Badges | Phase 3 |
 | EP-10 User Profile | Phase 3 |
 | EP-11 Leaderboard | Phase 3 |
-| EP-12 Instructor Dashboard | Phase 4 |
+| EP-12 Instructor Learning Dashboard | Phase 4 |
 | EP-13 Offline Mode | Phase 5 |
 | EP-14 Content Management | Phase 5 |
