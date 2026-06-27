@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiveLink Mobile — Screen Mockups</title>
+<style>
+:root {
+  --bg: #080C18;
+  --surface: #0F1626;
+  --card: #182038;
+  --card2: #1E2847;
+  --border: #263152;
+  --accent: #3B82F6;
+  --teal: #06B6D4;
+  --green: #22C55E;
+  --red: #EF4444;
+  --yellow: #F59E0B;
+  --text: #F1F5F9;
+  --muted: #7C8FAD;
+  --phone-w: 320px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── NAV ── */
+.site-nav{background:#0A0F1E;border-bottom:1px solid var(--border);padding:14px 24px;position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:16px;overflow-x:auto}
+.logo{font-size:15px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;margin-right:8px}
+.nav-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;transition:.15s;font-family:inherit}
+.nav-btn:hover,.nav-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ── LAYOUT ── */
+main{padding:32px 24px;max-width:1600px;margin:0 auto}
+.section{display:none}.section.active{display:block}
+.sec-title{font-size:20px;font-weight:800;margin-bottom:4px}
+.sec-desc{font-size:13px;color:var(--muted);margin-bottom:28px}
+.screen-grid{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.screen-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.screen-label{font-size:11px;font-family:'SF Mono',Consolas,monospace;color:var(--muted);background:var(--card);padding:3px 10px;border-radius:4px}
+
+/* ── PHONE FRAME ── */
+.phone{width:var(--phone-w);height:620px;background:var(--surface);border-radius:40px;border:7px solid #1E2A44;overflow:hidden;box-shadow:0 0 0 1px #141E34,0 24px 64px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.04);display:flex;flex-direction:column;position:relative}
+.phone::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#0D1527;border-radius:0 0 14px 14px;z-index:50}
+.sb{height:44px;padding:12px 20px 0;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;flex-shrink:0;background:var(--surface)}
+.sb-icons{display:flex;gap:5px;align-items:center;font-size:11px;color:var(--muted)}
+.sc{flex:1;overflow-y:auto;scrollbar-width:none}.sc::-webkit-scrollbar{display:none}
+.tab-bar{height:60px;background:#0B1020;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;padding:4px 0 8px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;font-size:10px;color:var(--muted);cursor:pointer;padding-top:4px}
+.tab.on{color:var(--accent)}.tab-ico{font-size:18px;line-height:1}
+
+/* ── REUSABLE UI ── */
+.nav-bar{padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+.back{color:var(--accent);font-size:13px;display:flex;align-items:center;gap:3px}
+.nav-ttl{font-size:16px;font-weight:700}
+.nav-act{font-size:13px;color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin:0 14px;margin-top:10px}
+.btn{display:block;width:calc(100% - 28px);margin:10px 14px 0;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;text-align:center;cursor:pointer;font-family:inherit}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--muted)}
+.btn-link{background:none;border:none;color:var(--accent);font-size:13px;text-align:center;width:100%;margin-top:12px;display:block;cursor:pointer}
+.input{display:block;width:calc(100% - 28px);margin:6px 14px 0;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-family:inherit}
+.lbl{font-size:12px;font-weight:600;color:var(--muted);padding:0 14px;margin-top:14px;display:block}
+.divider{height:1px;background:var(--border);margin:10px 14px}
+.sec-hdr{padding:12px 14px 4px;font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:16px;font-size:11px;font-weight:700}
+.chip-b{background:rgba(59,130,246,.15);color:var(--accent);border:1px solid rgba(59,130,246,.25)}
+.chip-g{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.chip-r{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.chip-y{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.25)}
+.prog{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:3px}
+.toggle{width:42px;height:24px;border-radius:12px;background:var(--green);position:relative;flex-shrink:0}
+.toggle::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;right:2px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.toggle.off{background:var(--border)}.toggle.off::after{right:auto;left:2px}
+.avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--teal));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0}
+.stars{color:var(--yellow);font-size:13px;letter-spacing:1px}
+.muted{color:var(--muted)}.sm{font-size:12px}.bold{font-weight:700}
+
+/* ── BRIEFING CARDS ── */
+.brief{border-radius:12px;margin:0 14px 8px;padding:12px 14px;border-left:4px solid}
+.brief-do{background:rgba(34,197,94,.08);border-color:var(--green)}
+.brief-dont{background:rgba(239,68,68,.08);border-color:var(--red)}
+.brief-lbl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.brief-do .brief-lbl{color:var(--green)}.brief-dont .brief-lbl{color:var(--red)}
+.brief-txt{font-size:13px;line-height:1.4}
+
+/* ── QUIZ OPTION ── */
+.qopt{margin:0 14px 8px;padding:12px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;font-size:13px;line-height:1.4;cursor:pointer}
+.qopt.sel{border-color:var(--accent);background:rgba(59,130,246,.1)}
+.qopt.ok{border-color:var(--green);background:rgba(34,197,94,.1)}
+.qopt.ng{border-color:var(--red);background:rgba(239,68,68,.08)}
+
+/* ── FLASHCARD ── */
+.fcard{margin:14px;padding:28px 18px;background:var(--card);border:1.5px solid var(--border);border-radius:16px;text-align:center;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.recall-row{display:flex;gap:8px;padding:10px 14px}
+.rcl{flex:1;padding:11px 6px;border-radius:10px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.rcl-f{background:rgba(239,68,68,.15);color:var(--red)}
+.rcl-h{background:rgba(245,158,11,.15);color:var(--yellow)}
+.rcl-g{background:rgba(34,197,94,.15);color:var(--green)}
+
+/* ── CAT GRID ── */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 14px}
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
+.cat-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.cat-ct{font-size:11px;color:var(--muted);margin-bottom:8px}
+
+/* ── DIVE CARD ── */
+.dive-card{margin:0 14px 8px;padding:13px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.dive-site{font-size:14px;font-weight:700}
+.dive-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.dive-stats{display:flex;gap:14px;margin-top:8px}
+.ds{font-size:11px;color:var(--muted)}.ds strong{color:var(--text);font-size:12px}
+
+/* ── BADGE GRID ── */
+.badge-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 14px}
+.badge{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center}
+.badge .ico{font-size:26px;margin-bottom:3px}
+.badge .nm{font-size:9px;color:var(--muted)}
+.badge.locked{opacity:.35;filter:grayscale(.8)}
+
+/* ── CERT ITEM ── */
+.cert-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.cert-badge{width:38px;height:38px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--yellow);flex-shrink:0}
+
+/* ── MASTERY ROW ── */
+.mrow{padding:7px 14px;display:flex;align-items:center;gap:10px}
+.mlbl{font-size:12px;width:86px;flex-shrink:0}
+.mbar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.mfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:2px}
+.mpct{font-size:11px;color:var(--muted);width:28px;text-align:right}
+
+/* ── SKILL ROW ── */
+.skill-row{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.skill-signed{color:var(--green);font-size:11px}
+
+/* ── GROUP CARD ── */
+.gc{margin:0 14px 8px;padding:13px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.gc-name{font-size:14px;font-weight:700}
+.gc-meta{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ── MODAL ── */
+.modal-bg{flex:1;background:rgba(8,12,24,.85);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:22px 18px;width:100%;text-align:center}
+
+/* ── WELCOME ── */
+.welcome-logo{width:76px;height:76px;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--teal));display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto;box-shadow:0 8px 32px rgba(59,130,246,.4)}
+
+/* ── ONBOARDING DOTS ── */
+.dots{display:flex;gap:5px;padding:14px;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border)}
+.dot.on{background:var(--accent);width:18px;border-radius:4px}
+
+/* ── SEARCH BAR ── */
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin:10px 14px 0;font-size:13px;color:var(--muted)}
+
+/* ── FILTER CHIPS ── */
+.filter-row{display:flex;gap:6px;padding:8px 14px;overflow-x:auto;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.fc{padding:5px 12px;border-radius:16px;font-size:11px;font-weight:700;white-space:nowrap;background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer}
+.fc.on{background:rgba(59,130,246,.15);border-color:var(--accent);color:var(--accent)}
+
+/* ── CHECKLIST ── */
+.chk-sec{padding:10px 14px}
+.chk-hdr{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.chk-circle{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+.chk-circle.done{background:var(--green);border-color:var(--green);color:#fff}
+.chk-item{display:flex;align-items:center;gap:8px;padding:5px 0 5px 32px}
+.chkbox{width:16px;height:16px;border-radius:4px;border:2px solid var(--border);flex-shrink:0}
+.chkbox.ok{background:var(--accent);border-color:var(--accent)}
+
+/* ── BAR CHART ── */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:56px;padding:0 14px;margin-top:6px}
+.bar{flex:1;border-radius:3px 3px 0 0;background:rgba(59,130,246,.25);border:1px solid rgba(59,130,246,.3);min-height:4px}
+.bar.hi{background:var(--accent)}
+.bar-labels{display:flex;gap:6px;padding:2px 14px;font-size:9px;color:var(--muted)}
+.bar-labels span{flex:1;text-align:center}
+
+/* ── PROGRESS RING ── */
+.ring-wrap{display:flex;align-items:center;justify-content:center;padding:14px 0}
+.ring{width:80px;height:80px;border-radius:50%;background:conic-gradient(var(--accent) 0% 74%,var(--border) 74% 100%);display:flex;align-items:center;justify-content:center;position:relative}
+.ring::before{content:'';position:absolute;width:58px;height:58px;border-radius:50%;background:var(--surface)}
+.ring-val{position:relative;z-index:1;font-size:15px;font-weight:800}
+
+/* ── CONFETTI ── */
+.confetti{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden}
+.conf-piece{position:absolute;width:7px;height:7px;border-radius:2px;animation:fall 2.5s ease-out forwards}
+@keyframes fall{from{opacity:1;transform:translateY(-10px) rotate(0deg)}to{opacity:0;transform:translateY(640px) rotate(720deg)}}
+
+/* ── XP BAR ── */
+.xp-row{padding:10px 14px;display:flex;align-items:center;gap:10px}
+.xp-lbl{font-size:11px;color:var(--muted);white-space:nowrap}
+.xp-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--yellow),#F97316);border-radius:3px}
+.xp-val{font-size:11px;color:var(--yellow);white-space:nowrap}
+
+/* ── FAB ── */
+.fab{position:absolute;bottom:72px;right:14px;width:44px;height:44px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(59,130,246,.5);color:#fff}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="site-nav">
+  <div class="logo">🤿 DiveLink</div>
+  <button class="nav-btn active" onclick="show('auth')">Auth</button>
+  <button class="nav-btn" onclick="show('home')">Home</button>
+  <button class="nav-btn" onclick="show('learn')">Learn</button>
+  <button class="nav-btn" onclick="show('log')">Log</button>
+  <button class="nav-btn" onclick="show('profile')">Profile</button>
+  <button class="nav-btn" onclick="show('instructor')">Instructor</button>
+  <button class="nav-btn" onclick="show('modals')">Modals</button>
+</nav>
+
+<main>
+
+<!-- AUTH -->
+<div class="section active" id="sec-auth">
+  <div class="sec-title">Auth Screens</div>
+  <div class="sec-desc">No sign-up in this app — accounts are created on the dive-link web platform.</div>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">(auth)/index</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:20px 0 0">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 14px">
+            <div class="welcome-logo">🤿</div>
+            <div style="text-align:center">
+              <div style="font-size:26px;font-weight:900;letter-spacing:-.5px">DiveLink</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:4px">Learn. Log. Dive.</div>
+            </div>
+          </div>
+          <div style="width:100%;padding-bottom:24px">
+            <button class="btn">Sign In</button>
+            <div class="btn-link">Create a dive-link account ↗</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(auth)/login</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← Back</span><span class="nav-ttl"></span><span></span></div>
+        <div class="sc" style="padding-top:20px">
+          <div style="padding:0 14px 16px"><div style="font-size:22px;font-weight:900">Sign In</div><div style="font-size:13px;color:var(--muted);margin-top:4px">via your dive-link account</div></div>
+          <span class="lbl">Email</span>
+          <input class="input" type="text" value="diver@example.com" style="pointer-events:none">
+          <span class="lbl" style="margin-top:14px">Password</span>
+          <div class="input" style="display:flex;justify-content:space-between;align-items:center"><span style="letter-spacing:3px">●●●●●●●●</span><span style="font-size:12px;color:var(--accent)">Show</span></div>
+          <button class="btn" style="margin-top:20px">Sign In</button>
+          <div class="btn-link" style="margin-top:12px">Don't have an account? Register ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(auth)/onboarding/certifications</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc" style="padding-top:20px">
+          <div style="padding:0 14px 4px">
+            <div style="font-size:20px;font-weight:900">Your CMAS Certifications</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Content unlocked based on your level</div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:12px 14px"></div>
+          <div class="cert-item">
+            <div class="cert-badge">★★</div>
+            <div><div style="font-size:14px;font-weight:700">CMAS Open Water Diver</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Issued Jan 2023 · Active</div></div>
+          </div>
+          <div class="cert-item">
+            <div class="cert-badge">★★★</div>
+            <div><div style="font-size:14px;font-weight:700">CMAS Advanced Diver</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Issued Mar 2024 · Active</div></div>
+          </div>
+          <div style="margin:14px 14px;padding:11px 12px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:10px;font-size:12px;color:var(--green)">✓ Advanced content is now unlocked for you</div>
+          <div style="padding:8px 14px;font-size:11px;color:var(--muted)">These certifications are managed on dive-link. This app cannot issue or modify CMAS certifications.</div>
+          <button class="btn" style="margin-top:16px">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(auth)/onboarding/notifications</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc" style="display:flex;flex-direction:column;align-items:center;padding:0">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px 14px 0">
+            <div style="width:80px;height:80px;border-radius:20px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:36px">🔔</div>
+            <div style="text-align:center">
+              <div style="font-size:20px;font-weight:800">Stay Sharp Every Day</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5">Daily briefings at your chosen time.<br>Streak alerts so you never lose progress.</div>
+            </div>
+            <div style="width:100%;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px">
+                <span style="font-size:16px;margin-top:1px">📖</span><div><div style="font-size:13px;font-weight:600">Daily Briefing</div><div style="font-size:11px;color:var(--muted);margin-top:2px">One Do, one Don't every morning</div></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px">
+                <span style="font-size:16px;margin-top:1px">🔥</span><div><div style="font-size:13px;font-weight:600">Streak Alerts</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Don't lose your hard-earned streak</div></div>
+              </div>
+            </div>
+          </div>
+          <div style="width:100%;padding:20px 0 24px">
+            <button class="btn">Enable Notifications</button>
+            <div class="btn-link">Maybe later →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="section" id="sec-home">
+  <div class="sec-title">Home Screen</div>
+  <div class="sec-desc">Daily engagement hub — briefing, quiz CTA, XP progress, and recent activity.</div>
+  <div class="screen-grid">
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/home</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:14px 14px 10px;display:flex;align-items:center;justify-content:space-between">
+            <div><div style="font-size:13px;color:var(--muted)">Good morning,</div><div style="font-size:18px;font-weight:800">Yosuke 👋</div></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--yellow)">🔥 12</div>
+              <div class="chip chip-b" style="font-size:10px">Lv.4</div>
+            </div>
+          </div>
+          <div class="xp-row"><span class="xp-lbl">Lv.4</span><div class="xp-bar"><div class="xp-fill" style="width:68%"></div></div><span class="xp-val">340/500 XP</span></div>
+          <div class="sec-hdr">TODAY'S BRIEFING</div>
+          <div class="brief brief-do"><div class="brief-lbl">✓ DO</div><div class="brief-txt">Always signal your buddy before surfacing</div></div>
+          <div class="brief brief-dont"><div class="brief-lbl">✗ DON'T</div><div class="brief-txt">Skip your buddy check when in a hurry</div></div>
+          <button class="btn">Quiz Yourself →</button>
+          <div class="sec-hdr" style="margin-top:14px">RECENT ACTIVITY</div>
+          <div class="row"><div><div style="font-size:13px;font-weight:600">Quiz · 4/5 correct</div><div style="font-size:11px;color:var(--muted)">2 hours ago</div></div><div class="chip chip-y">+50 XP</div></div>
+          <div class="row"><div><div style="font-size:13px;font-weight:600">Dive · Blue Hole</div><div style="font-size:11px;color:var(--muted)">Yesterday</div></div><div class="chip chip-b">32 m</div></div>
+          <div class="row" style="border:none"><div><div style="font-size:13px;font-weight:600">Flashcards · 12 cards</div><div style="font-size:11px;color:var(--muted)">2 days ago</div></div><div class="chip chip-g">+30 XP</div></div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab on"><div class="tab-ico">🏠</div>Home</div>
+          <div class="tab"><div class="tab-ico">📖</div>Learn</div>
+          <div class="tab"><div class="tab-ico">⚓</div>Log</div>
+          <div class="tab"><div class="tab-ico">👤</div>Profile</div>
+          <div class="tab"><div class="tab-ico">🎓</div>Inst.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEARN -->
+<div class="section" id="sec-learn">
+  <div class="sec-title">Learn Screens</div>
+  <div class="sec-desc">Quiz, flashcards, and knowledge base. Cert tier filtering derived from dive-link API.</div>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/learn/index</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:14px 14px 10px;font-size:18px;font-weight:800">Learn</div>
+          <div class="filter-row"><div class="fc on">Quiz</div><div class="fc">Flashcards</div><div class="fc">Knowledge</div><div class="fc">★ Saved</div></div>
+          <div style="height:1px;background:var(--border);margin:2px 14px 10px"></div>
+          <div class="ring-wrap"><div class="ring"><span class="ring-val">63%</span></div></div>
+          <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:-6px">Overall mastery</div>
+          <div style="text-align:center;font-size:14px;font-weight:700;color:var(--yellow);margin-top:8px">🔥 12-day streak</div>
+          <button class="btn" style="margin-top:16px">Start Daily Quiz (5 Qs)</button>
+          <button class="btn btn-ghost" style="margin-top:8px">Practice Weak Cards →</button>
+          <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:10px">12 cards due today</div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab"><div class="tab-ico">🏠</div>Home</div>
+          <div class="tab on"><div class="tab-ico">📖</div>Learn</div>
+          <div class="tab"><div class="tab-ico">⚓</div>Log</div>
+          <div class="tab"><div class="tab-ico">👤</div>Profile</div>
+          <div class="tab"><div class="tab-ico">🎓</div>Inst.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/learn/quiz/session</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:12px 14px 8px;display:flex;align-items:center;justify-content:space-between"><span style="color:var(--accent);font-size:13px">← Quiz</span><span style="font-size:13px;color:var(--muted)">Question 2 of 5</span></div>
+          <div style="margin:0 14px;margin-bottom:12px"><div class="prog"><div class="prog-fill" style="width:40%"></div></div></div>
+          <div class="card" style="margin-bottom:12px"><div style="font-size:15px;font-weight:700;line-height:1.4">What does BWRAF stand for?</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Perform this check before every dive with your buddy</div></div>
+          <div class="qopt">A) Buoyancy, Weights, Releases, Air, Final OK</div>
+          <div class="qopt sel">B) Breathing, Weights, Releases, Air, Final OK</div>
+          <div class="qopt">C) Buoyancy, Wetsuit, Releases, Ascent, Final OK</div>
+          <div class="qopt">D) Buoyancy, Weights, Regulator, Air, Final OK</div>
+          <button class="btn" style="margin-top:8px">Submit →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/learn/quiz/session — answer revealed</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:12px 14px 8px;display:flex;align-items:center;justify-content:space-between"><span style="color:var(--accent);font-size:13px">← Quiz</span><span style="font-size:13px;color:var(--muted)">Question 2 of 5</span></div>
+          <div style="margin:0 14px;margin-bottom:12px"><div class="prog"><div class="prog-fill" style="width:40%"></div></div></div>
+          <div class="card" style="margin-bottom:12px"><div style="font-size:15px;font-weight:700;line-height:1.4">What does BWRAF stand for?</div></div>
+          <div class="qopt ok">A) Buoyancy, Weights, Releases, Air, Final OK ✓</div>
+          <div class="qopt ng">B) Breathing, Weights, Releases, Air, Final OK ✗</div>
+          <div class="qopt">C) Buoyancy, Wetsuit, Releases, Ascent, Final OK</div>
+          <div class="qopt">D) Buoyancy, Weights, Regulator, Air, Final OK</div>
+          <div style="margin:10px 14px;padding:11px 12px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">✓ Correct!</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.5">BWRAF is the pre-dive buddy check: Buoyancy, Weights, Releases, Air, Final OK.</div>
+          </div>
+          <button class="btn">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/learn/quiz/results</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc" style="text-align:center">
+          <div style="padding:20px 14px 0;font-size:20px;font-weight:900">Quiz Complete!</div>
+          <div style="font-size:42px;font-weight:900;margin:10px 0;background:linear-gradient(135deg,var(--accent),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent">4/5</div>
+          <div style="font-size:20px;color:var(--yellow)">★★★★☆</div>
+          <div style="margin:12px 14px;padding:13px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:12px">
+            <div style="font-size:22px;font-weight:800;color:var(--yellow)">+60 XP</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">50 XP × 1.2 streak bonus</div>
+          </div>
+          <div style="font-size:14px;color:var(--yellow);margin-bottom:12px">🔥 Streak: 12 days (kept!)</div>
+          <div style="text-align:left">
+            <div class="sec-hdr">QUESTIONS</div>
+            <div class="row"><span style="font-size:13px">What does BWRAF stand for?</span><span style="color:var(--green)">✓</span></div>
+            <div class="row"><span style="font-size:13px">Safe ascent rate is...</span><span style="color:var(--green)">✓</span></div>
+            <div class="row"><span style="font-size:13px">NDL stands for...</span><span style="color:var(--green)">✓</span></div>
+            <div class="row"><span style="font-size:13px">RDP uses which table?</span><span style="color:var(--green)">✓</span></div>
+            <div class="row"><span style="font-size:13px">Surface interval before flying</span><span style="color:var(--red)">✗</span></div>
+          </div>
+          <button class="btn" style="margin-top:4px">Practice 1 Wrong Card →</button>
+          <div class="btn-link">Done</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/learn/flashcards/session</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:12px 14px 6px;display:flex;align-items:center;justify-content:space-between"><span style="color:var(--accent);font-size:13px">← Flashcards</span><span style="font-size:13px;color:var(--muted)">3 / 10</span></div>
+          <div style="margin:0 14px 10px"><div class="prog"><div class="prog-fill" style="width:30%"></div></div></div>
+          <div class="fcard"><div style="font-size:15px;font-weight:700;line-height:1.5">What is the maximum safe ascent rate?</div><div style="font-size:12px;color:var(--muted)">Tap to flip</div></div>
+          <div style="text-align:center;font-size:11px;color:var(--muted);padding:4px 14px">← swipe to skip · tap to reveal answer →</div>
+          <div class="recall-row">
+            <button class="rcl rcl-f">Forgot</button>
+            <button class="rcl rcl-h">Hard</button>
+            <button class="rcl rcl-g">Got it ✓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/learn/knowledge/index</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:14px 14px 6px;font-size:18px;font-weight:800">Knowledge Base</div>
+          <div class="search">🔍 Search cards...</div>
+          <div class="filter-row"><div class="fc on">All</div><div class="fc">Safety</div><div class="fc">Physiology</div><div class="fc">Equipment</div><div class="fc">★ Saved</div></div>
+          <div style="margin:4px 14px;padding:8px 10px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:12px;color:var(--muted)">Cert tier: ★★ Advanced (from dive-link)</span>
+            <span style="font-size:12px;color:var(--accent)">Change</span>
+          </div>
+          <div class="cat-grid" style="margin-top:8px">
+            <div class="cat-card"><div class="cat-name">Safety</div><div class="cat-ct">42 cards</div><div class="prog"><div class="prog-fill" style="width:68%"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">68% mastered</div></div>
+            <div class="cat-card"><div class="cat-name">Physiology</div><div class="cat-ct">28 cards</div><div class="prog"><div class="prog-fill" style="width:41%"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">41% mastered</div></div>
+            <div class="cat-card"><div class="cat-name">Equipment</div><div class="cat-ct">35 cards</div><div class="prog"><div class="prog-fill" style="width:55%"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">55% mastered</div></div>
+            <div class="cat-card"><div class="cat-name">Environment</div><div class="cat-ct">19 cards</div><div class="prog"><div class="prog-fill" style="width:80%"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">80% mastered</div></div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab"><div class="tab-ico">🏠</div>Home</div>
+          <div class="tab on"><div class="tab-ico">📖</div>Learn</div>
+          <div class="tab"><div class="tab-ico">⚓</div>Log</div>
+          <div class="tab"><div class="tab-ico">👤</div>Profile</div>
+          <div class="tab"><div class="tab-ico">🎓</div>Inst.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/learn/knowledge/card/[id]</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← Safety</span><span></span><span style="color:var(--yellow);font-size:16px">★</span></div>
+        <div class="sc" style="padding:14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div class="chip chip-g">✓ DO</div><div class="chip chip-b">Safety</div>
+            <div class="chip" style="background:var(--card);border:1px solid var(--border);color:var(--muted)">Tier 1+</div>
+          </div>
+          <div style="font-size:18px;font-weight:800;line-height:1.3;margin-bottom:6px">Always signal your buddy before surfacing</div>
+          <div style="height:1px;background:var(--border);margin:10px 0"></div>
+          <div style="font-size:13px;line-height:1.6;color:var(--muted)">Never ascend alone or without alerting your buddy. Maintain visual or physical contact throughout the ascent.</div>
+          <div style="margin-top:14px;padding:11px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px">
+            <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:5px">WHY?</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.6">Separation during ascent is one of the leading causes of DCS and near-miss incidents.</div>
+          </div>
+          <div style="margin-top:14px"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Mastery</div><div style="display:flex;align-items:center;gap:10px"><div class="prog" style="flex:1;height:7px"><div class="prog-fill" style="width:50%"></div></div><span style="font-size:13px;font-weight:700">50%</span></div></div>
+          <button class="btn" style="margin-top:16px;margin-left:0;width:100%">Quiz Me on This →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LOG -->
+<div class="section" id="sec-log">
+  <div class="sec-title">Log Screens</div>
+  <div class="sec-desc">Dive log list, BWRAF pre-dive safety check, and dive detail view.</div>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/log/index</div>
+      <div class="phone" style="position:relative">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:14px 14px 6px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:18px;font-weight:800">Dive Log</div><div class="chip chip-b">48 dives</div></div>
+          <div class="search">🔍 Search dives...</div>
+          <div class="filter-row"><div class="fc on">All</div><div class="fc">This month</div><div class="fc">By site</div></div>
+          <div class="sec-hdr">JUNE 2026</div>
+          <div class="dive-card"><div class="dive-site">Blue Hole, Dahab</div><div class="dive-meta">24 Jun 2026 · Buddy: Maria</div><div class="dive-stats"><div class="ds"><strong>32 m</strong> depth</div><div class="ds"><strong>56 min</strong></div><div class="ds">26°C · 15m vis</div></div></div>
+          <div class="dive-card"><div class="dive-site">Thistlegorm Wreck</div><div class="dive-meta">20 Jun 2026 · Buddy: Ahmed</div><div class="dive-stats"><div class="ds"><strong>28 m</strong> depth</div><div class="ds"><strong>48 min</strong></div></div></div>
+          <div class="sec-hdr">MAY 2026</div>
+          <div class="dive-card"><div class="dive-site">Ras Mohamed Reef</div><div class="dive-meta">15 May 2026</div><div class="dive-stats"><div class="ds"><strong>22 m</strong> depth</div><div class="ds"><strong>44 min</strong></div></div></div>
+        </div>
+        <div class="fab">+</div>
+        <div class="tab-bar">
+          <div class="tab"><div class="tab-ico">🏠</div>Home</div>
+          <div class="tab"><div class="tab-ico">📖</div>Learn</div>
+          <div class="tab on"><div class="tab-ico">⚓</div>Log</div>
+          <div class="tab"><div class="tab-ico">👤</div>Profile</div>
+          <div class="tab"><div class="tab-ico">🎓</div>Inst.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/log/new/checklist — BWRAF</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← New Dive</span><span class="nav-ttl">Buddy Check</span><span style="font-size:12px;color:var(--muted)">3/5</span></div>
+        <div style="padding:8px 14px;margin-bottom:2px"><div class="prog"><div class="prog-fill" style="width:60%"></div></div></div>
+        <div class="sc">
+          <div class="chk-sec">
+            <div class="chk-hdr"><div class="chk-circle done">✓</div><div style="font-size:14px;font-weight:700">B — Buoyancy</div></div>
+            <div class="chk-item"><div class="chkbox ok"></div><div style="font-size:12px;color:var(--muted)">BCD inflates &amp; deflates correctly</div></div>
+            <div class="chk-item"><div class="chkbox ok"></div><div style="font-size:12px;color:var(--muted)">Weight is correct for the site</div></div>
+          </div>
+          <div class="chk-sec" style="border-top:1px solid var(--border);padding-top:10px">
+            <div class="chk-hdr"><div class="chk-circle done">✓</div><div style="font-size:14px;font-weight:700">W — Weights</div></div>
+            <div class="chk-item"><div class="chkbox ok"></div><div style="font-size:12px;color:var(--muted)">Weight belt / pockets in place</div></div>
+            <div class="chk-item"><div class="chkbox ok"></div><div style="font-size:12px;color:var(--muted)">Quick-release checked &amp; accessible</div></div>
+          </div>
+          <div class="chk-sec" style="border-top:1px solid var(--border);padding-top:10px;background:rgba(59,130,246,.04);border-radius:8px">
+            <div class="chk-hdr"><div class="chk-circle" style="border-color:var(--accent);color:var(--accent)">R</div><div style="font-size:14px;font-weight:700;color:var(--accent)">R — Releases ← current</div></div>
+            <div class="chk-item"><div class="chkbox"></div><div style="font-size:12px;color:var(--muted)">All buckles accessible &amp; functional</div></div>
+            <div class="chk-item"><div class="chkbox"></div><div style="font-size:12px;color:var(--muted)">Buddy can locate &amp; release them</div></div>
+          </div>
+          <div class="chk-sec" style="border-top:1px solid var(--border);padding-top:10px">
+            <div class="chk-hdr"><div class="chk-circle">A</div><div style="font-size:14px;font-weight:700;color:var(--muted)">A — Air</div></div>
+          </div>
+          <div class="chk-sec" style="border-top:1px solid var(--border);padding-top:10px">
+            <div class="chk-hdr"><div class="chk-circle">F</div><div style="font-size:14px;font-weight:700;color:var(--muted)">F — Final OK</div></div>
+          </div>
+          <div style="margin:10px 14px;padding:8px 11px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:12px;color:var(--yellow)">+20 XP for completing your buddy check</div>
+          <button class="btn btn-ghost" style="margin-top:4px;opacity:.5;cursor:not-allowed">Complete &amp; Start Dive Log</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/log/[id]/index — Dive Detail</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← Dive Log</span><span></span><span style="color:var(--muted);font-size:16px">⋮</span></div>
+        <div class="sc">
+          <div style="height:120px;background:linear-gradient(180deg,rgba(59,130,246,.15),transparent);display:flex;align-items:center;justify-content:center;font-size:36px;gap:8px">📷 📷</div>
+          <div style="padding:14px 14px 6px"><div style="font-size:20px;font-weight:800">Blue Hole, Dahab</div><div style="font-size:13px;color:var(--muted);margin-top:2px">24 June 2026</div></div>
+          <div style="height:1px;background:var(--border);margin:4px 14px 8px"></div>
+          <div class="row"><span style="font-size:13px;color:var(--muted)">Depth</span><span style="font-size:13px;font-weight:700">32 m</span></div>
+          <div class="row"><span style="font-size:13px;color:var(--muted)">Duration</span><span style="font-size:13px;font-weight:700">56 min</span></div>
+          <div class="row"><span style="font-size:13px;color:var(--muted)">Buddy</span><span style="font-size:13px;font-weight:700">Maria S.</span></div>
+          <div class="row"><span style="font-size:13px;color:var(--muted)">Pressure</span><span style="font-size:13px;font-weight:700">200 → 60 bar</span></div>
+          <div class="row"><span style="font-size:13px;color:var(--muted)">Water temp</span><span style="font-size:13px;font-weight:700">26 °C</span></div>
+          <div class="row"><span style="font-size:13px;color:var(--muted)">Visibility</span><span style="font-size:13px;font-weight:700">15 m</span></div>
+          <div class="sec-hdr">NOTES</div>
+          <div style="padding:8px 14px;font-size:13px;color:var(--muted);line-height:1.5">Spotted a school of barracuda near the arch at 28 m. Excellent visibility.</div>
+          <button class="btn">Share This Dive →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="section" id="sec-profile">
+  <div class="sec-title">Profile Screens</div>
+  <div class="sec-desc">CMAS certs from dive-link (read-only) + in-app XP/gamification from Supabase.</div>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/profile/index</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:14px 14px 8px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:18px;font-weight:800">Profile</div><span style="font-size:18px">⚙</span></div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 14px 12px;border-bottom:1px solid var(--border)">
+            <div class="avatar">Y</div>
+            <div><div style="font-size:15px;font-weight:800">Yosuke Tanaka</div><div style="font-size:12px;color:var(--muted)">yosukelight@me.com</div></div>
+          </div>
+          <div style="padding:10px 14px 6px;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">CMAS CERTIFICATIONS</div>
+            <span style="font-size:11px;color:var(--accent)">dive-link ↗</span>
+          </div>
+          <div class="cert-item"><div class="cert-badge">★★</div><div><div style="font-size:13px;font-weight:700">CMAS Open Water Diver</div><div style="font-size:11px;color:var(--muted)">Issued Jan 2023</div></div></div>
+          <div class="cert-item" style="border-bottom:none"><div class="cert-badge">★★★</div><div><div style="font-size:13px;font-weight:700">CMAS Advanced Diver</div><div style="font-size:11px;color:var(--muted)">Issued Mar 2024</div></div></div>
+          <div style="padding:4px 14px 10px"><span style="font-size:12px;color:var(--accent);cursor:pointer">Manage on dive-link ↗</span></div>
+          <div style="height:1px;background:var(--border);margin:0 14px"></div>
+          <div class="sec-hdr">IN-APP PROGRESS</div>
+          <div style="padding:8px 14px"><div style="font-size:14px;font-weight:700">Level 4 · Explorer</div><div class="xp-row" style="padding:6px 0 0"><span class="xp-lbl">Lv.4</span><div class="xp-bar"><div class="xp-fill" style="width:68%"></div></div><span class="xp-val">340/500</span></div></div>
+          <div style="display:flex;gap:0;padding:4px 14px 10px">
+            <div style="flex:1;text-align:center;border-right:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:var(--yellow)">🔥 12</div><div style="font-size:10px;color:var(--muted)">day streak</div></div>
+            <div style="flex:1;text-align:center"><div style="font-size:18px;font-weight:800">48</div><div style="font-size:10px;color:var(--muted)">dives</div></div>
+          </div>
+          <div style="display:flex;gap:8px;padding:4px 14px 14px">
+            <button class="btn btn-ghost" style="margin:0;flex:1;padding:10px;font-size:12px">Badges →</button>
+            <button class="btn btn-ghost" style="margin:0;flex:1;padding:10px;font-size:12px">Stats →</button>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab"><div class="tab-ico">🏠</div>Home</div>
+          <div class="tab"><div class="tab-ico">📖</div>Learn</div>
+          <div class="tab"><div class="tab-ico">⚓</div>Log</div>
+          <div class="tab on"><div class="tab-ico">👤</div>Profile</div>
+          <div class="tab"><div class="tab-ico">🎓</div>Inst.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/profile/edit</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← Profile</span><span class="nav-ttl">Edit Profile</span><span></span></div>
+        <div class="sc">
+          <div style="padding:20px 0 16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div class="avatar" style="width:64px;height:64px;font-size:26px">Y</div>
+            <button style="background:none;border:1px solid var(--border);color:var(--accent);padding:6px 14px;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer">Change Photo</button>
+          </div>
+          <div style="padding:14px 14px 0;font-size:13px;font-weight:700;color:var(--muted)">HOME DIVE CLUB</div>
+          <div class="input" style="margin-top:6px">Red Sea Divers, Dahab</div>
+          <div style="margin:18px 14px 8px;padding:12px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px">
+            <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">FROM DIVE-LINK (read-only)</div>
+            <div class="row" style="padding:6px 0;border-color:rgba(255,255,255,.06)"><span style="font-size:12px;color:var(--muted)">Display name</span><span style="font-size:12px;font-weight:600">Yosuke Tanaka</span></div>
+            <div class="row" style="padding:6px 0;border-color:rgba(255,255,255,.06)"><span style="font-size:12px;color:var(--muted)">Email</span><span style="font-size:12px">yosukelight@me.com</span></div>
+            <div class="row" style="padding:6px 0;border:none"><span style="font-size:12px;color:var(--muted)">Role</span><span style="font-size:12px">Diver</span></div>
+            <div style="padding:4px 0"><span style="font-size:12px;color:var(--accent)">Edit on dive-link ↗</span></div>
+          </div>
+          <button class="btn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/profile/badges</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← Profile</span><span class="nav-ttl">Badges</span><span style="font-size:12px;color:var(--muted)">12 earned</span></div>
+        <div class="sc">
+          <div class="sec-hdr">EARNED</div>
+          <div class="badge-grid">
+            <div class="badge"><div class="ico">⭐</div><div class="nm">First Quiz</div></div>
+            <div class="badge"><div class="ico">🔥</div><div class="nm">7-Day Streak</div></div>
+            <div class="badge"><div class="ico">⚓</div><div class="nm">10 Dives</div></div>
+            <div class="badge"><div class="ico">📚</div><div class="nm">50 Cards</div></div>
+            <div class="badge"><div class="ico">🌊</div><div class="nm">Night Dive</div></div>
+            <div class="badge"><div class="ico">🏆</div><div class="nm">Top 10%</div></div>
+          </div>
+          <div class="sec-hdr" style="margin-top:12px">IN PROGRESS</div>
+          <div style="margin:0 14px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;gap:12px">
+            <div style="font-size:28px">🕯️</div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:700">30-Day Streak</div><div class="prog" style="margin-top:6px;height:5px"><div class="prog-fill" style="width:40%"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">12 / 30 days</div></div>
+          </div>
+          <div class="sec-hdr" style="margin-top:12px">LOCKED</div>
+          <div class="badge-grid">
+            <div class="badge locked"><div class="ico">🏅</div><div class="nm">???</div></div>
+            <div class="badge locked"><div class="ico">💎</div><div class="nm">???</div></div>
+            <div class="badge locked"><div class="ico">🌟</div><div class="nm">???</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/profile/settings</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← Profile</span><span class="nav-ttl">Settings</span><span></span></div>
+        <div class="sc">
+          <div class="sec-hdr">NOTIFICATIONS</div>
+          <div class="row"><div><div style="font-size:13px;font-weight:600">Daily reminder</div><div style="font-size:11px;color:var(--muted)">08:00 AM</div></div><span style="font-size:12px;color:var(--accent)">Edit</span></div>
+          <div class="row"><span style="font-size:13px;font-weight:600">Streak alerts</span><div class="toggle"></div></div>
+          <div class="sec-hdr" style="margin-top:10px">UNITS</div>
+          <div class="row"><span style="font-size:13px;font-weight:600">Measurement</span><div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden"><div style="padding:6px 14px;font-size:12px;font-weight:700;background:var(--accent);color:#fff">Metric</div><div style="padding:6px 14px;font-size:12px;font-weight:700;color:var(--muted)">Imperial</div></div></div>
+          <div class="sec-hdr" style="margin-top:10px">LEADERBOARD</div>
+          <div class="row"><span style="font-size:13px;font-weight:600">Show my score</span><div class="toggle off"></div></div>
+          <div class="sec-hdr" style="margin-top:10px">ACCOUNT</div>
+          <div class="row"><span style="font-size:13px;color:var(--red)">Delete account…</span><span style="font-size:14px;color:var(--muted)">›</span></div>
+          <div style="height:1px;background:var(--border);margin:14px 14px"></div>
+          <button class="btn" style="background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.25)">Log Out</button>
+          <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:14px;margin-bottom:20px">DiveLink v1.0.0</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- INSTRUCTOR -->
+<div class="section" id="sec-instructor">
+  <div class="sec-title">Instructor Screens</div>
+  <div class="sec-desc">Visible only when <code style="background:var(--card);padding:2px 6px;border-radius:4px;font-size:11px">authStore.identity.is_instructor === true</code> (from dive-link API). Practice sign-offs carry NO CMAS authority.</div>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/instructor/index</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="sc">
+          <div style="padding:14px 14px 10px;font-size:18px;font-weight:800">Learning Dashboard</div>
+          <button class="btn" style="margin-bottom:4px">+ New Group</button>
+          <div class="sec-hdr" style="margin-top:10px">MY GROUPS</div>
+          <div class="gc"><div class="gc-name">Advanced Open Water · Jun 2026</div><div class="gc-meta">6 students · Last active: today</div><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><div class="prog" style="flex:1"><div class="prog-fill" style="width:58%"></div></div><span style="font-size:12px;font-weight:700">58% avg</span></div></div>
+          <div class="gc"><div class="gc-name">Rescue Prep · May 2026</div><div class="gc-meta">4 students · Last active: 3 days ago</div><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><div class="prog" style="flex:1"><div class="prog-fill" style="width:71%"></div></div><span style="font-size:12px;font-weight:700">71% avg</span></div></div>
+          <div class="gc"><div class="gc-name">Open Water Intro · Apr 2026</div><div class="gc-meta">8 students · Last active: 1 week ago</div><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><div class="prog" style="flex:1"><div class="prog-fill" style="width:34%"></div></div><span style="font-size:12px;font-weight:700">34% avg</span></div></div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab"><div class="tab-ico">🏠</div>Home</div>
+          <div class="tab"><div class="tab-ico">📖</div>Learn</div>
+          <div class="tab"><div class="tab-ico">⚓</div>Log</div>
+          <div class="tab"><div class="tab-ico">👤</div>Profile</div>
+          <div class="tab on"><div class="tab-ico">🎓</div>Inst.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/instructor/students/[id]/index</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← Group</span><span class="nav-ttl">Maria S.</span><span></span></div>
+        <div class="sc">
+          <div class="ring-wrap"><div class="ring" style="background:conic-gradient(var(--accent) 0% 74%,var(--border) 74%)"><span class="ring-val">74%</span></div></div>
+          <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:-8px;margin-bottom:10px">Overall mastery</div>
+          <div class="sec-hdr">MASTERY BY CATEGORY</div>
+          <div class="mrow"><span class="mlbl">Safety</span><div class="mbar"><div class="mfill" style="width:82%"></div></div><span class="mpct">82%</span></div>
+          <div class="mrow"><span class="mlbl">Physiology</span><div class="mbar"><div class="mfill" style="width:63%"></div></div><span class="mpct">63%</span></div>
+          <div class="mrow"><span class="mlbl">Equipment</span><div class="mbar"><div class="mfill" style="width:74%"></div></div><span class="mpct">74%</span></div>
+          <div class="mrow"><span class="mlbl">Environment</span><div class="mbar"><div class="mfill" style="width:90%"></div></div><span class="mpct">90%</span></div>
+          <div class="sec-hdr" style="margin-top:10px">RECENT SESSIONS</div>
+          <div class="row"><span style="font-size:13px">Jun 26 · 5/5</span><span class="chip chip-y">+60 XP</span></div>
+          <div class="row"><span style="font-size:13px">Jun 25 · 4/5</span><span class="chip chip-y">+50 XP</span></div>
+          <div style="display:flex;gap:8px;padding:12px 14px 0">
+            <button class="btn btn-ghost" style="margin:0;flex:1;padding:10px;font-size:12px">Assign</button>
+            <button class="btn btn-ghost" style="margin:0;flex:1;padding:10px;font-size:12px">Remind</button>
+          </div>
+          <button class="btn" style="margin-top:8px">Practice Sign-Off →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">(tabs)/instructor/students/[id]/practice-signoff</div>
+      <div class="phone">
+        <div class="sb"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="nav-bar"><span class="back">← Maria S.</span><span style="font-size:14px;font-weight:700;flex:1;text-align:center">Practice Milestones</span><span></span></div>
+        <div class="sc">
+          <div style="margin:10px 14px;padding:10px 12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:11px;color:var(--yellow);line-height:1.5">⚠ These are informal practice records. CMAS certifications are issued via dive-link only.</div>
+          <div style="padding:8px 14px 4px;font-size:12px;color:var(--muted)">Student: <strong style="color:var(--text)">Maria S.</strong></div>
+          <div class="sec-hdr" style="margin-top:6px">BUOYANCY SKILLS</div>
+          <div class="skill-row"><div><div style="font-size:13px;font-weight:600">Neutral buoyancy hover</div><div style="font-size:11px;color:var(--muted)">Jun 24 · You</div></div><span class="skill-signed">✓ Done</span></div>
+          <div class="skill-row" style="background:rgba(59,130,246,.03)"><div style="font-size:13px">Weight adjustment at depth</div><span style="font-size:12px;color:var(--accent)">Tap →</span></div>
+          <div class="sec-hdr" style="margin-top:6px">EMERGENCY SKILLS</div>
+          <div class="skill-row"><div><div style="font-size:13px;font-weight:600">Mask clearing practised</div><div style="font-size:11px;color:var(--muted)">Jun 26 · You</div></div><span class="skill-signed">✓ Done</span></div>
+          <div class="skill-row"><div style="font-size:13px">Emergency ascent reviewed</div><span style="font-size:12px;color:var(--accent)">Tap →</span></div>
+          <div class="skill-row" style="border:none"><div style="font-size:13px">Rescue breathing practised</div><span style="font-size:12px;color:var(--accent)">Tap →</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="section" id="sec-modals">
+  <div class="sec-title">Modals</div>
+  <div class="sec-desc">Full-screen celebration overlays triggered by badge unlocks and in-app level-ups.</div>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">modal/achievement-unlock</div>
+      <div class="phone" style="background:#0A0F1E">
+        <div class="sb" style="background:#0A0F1E"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div style="flex:1;background:rgba(8,12,24,.9);display:flex;align-items:center;justify-content:center;padding:20px">
+          <div class="modal-box">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:12px">Achievement Unlocked</div>
+            <div style="width:72px;height:72px;border-radius:50%;background:rgba(245,158,11,.12);border:2px solid rgba(245,158,11,.3);display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 14px">🔥</div>
+            <div style="font-size:20px;font-weight:900;margin-bottom:4px">7-Day Streak</div>
+            <div style="font-size:14px;font-weight:800;color:var(--yellow);margin-bottom:8px">+100 XP</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.5">You've studied every day for a week. Keep the momentum going!</div>
+            <button class="btn" style="margin:0;width:100%">Awesome! 🎉</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">modal/level-up</div>
+      <div class="phone" style="background:#0A0F1E;position:relative;overflow:hidden">
+        <div class="sb" style="background:#0A0F1E"><span>9:41</span><div class="sb-icons">▲▲ WiFi ▓</div></div>
+        <div class="confetti">
+          <div class="conf-piece" style="left:15%;background:#3B82F6;animation-delay:.1s;animation-duration:3s"></div>
+          <div class="conf-piece" style="left:30%;background:#F59E0B;animation-delay:.3s;animation-duration:2.5s"></div>
+          <div class="conf-piece" style="left:50%;background:#22C55E;animation-delay:.0s;animation-duration:3.2s"></div>
+          <div class="conf-piece" style="left:65%;background:#EF4444;animation-delay:.2s;animation-duration:2.8s"></div>
+          <div class="conf-piece" style="left:80%;background:#06B6D4;animation-delay:.4s;animation-duration:3.1s"></div>
+          <div class="conf-piece" style="left:8%;background:#F59E0B;animation-delay:.6s;animation-duration:2.7s;border-radius:50%"></div>
+          <div class="conf-piece" style="left:44%;background:#3B82F6;animation-delay:.5s;animation-duration:2.9s;border-radius:50%"></div>
+          <div class="conf-piece" style="left:72%;background:#22C55E;animation-delay:.7s;animation-duration:3.3s"></div>
+        </div>
+        <div style="flex:1;background:rgba(8,12,24,.88);display:flex;align-items:center;justify-content:center;padding:20px">
+          <div class="modal-box">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:14px">In-App Level Up!</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px">
+              <div style="text-align:center;opacity:.5"><div style="font-size:28px;font-weight:900">5</div><div style="font-size:10px;color:var(--muted)">Explorer</div></div>
+              <div style="font-size:22px;color:var(--accent)">→</div>
+              <div style="text-align:center"><div style="font-size:36px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent">6</div><div style="font-size:11px;color:var(--teal);font-weight:700">Adv. Diver</div></div>
+            </div>
+            <div style="font-size:16px;font-weight:800;margin-bottom:4px">You're now an Advanced Diver!</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">(in-app level — separate from your CMAS certifications)</div>
+            <div style="font-size:13px;color:var(--yellow);font-weight:700;margin-bottom:18px">Total XP: 500</div>
+            <button class="btn" style="margin:0;width:100%">Keep Diving →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
