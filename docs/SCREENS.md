@@ -2,6 +2,8 @@
 
 Framework: Expo Router (file-based routing). All authenticated screens sit inside a root layout that checks session state.
 
+> **Auth note:** There is no sign-up screen in this app. Accounts are created on the dive-link web platform. The auth stack covers sign-in only. Role and certification level are read from the dive-link API — there are no local pickers for these values.
+
 ---
 
 ## Navigation Structure
@@ -10,14 +12,11 @@ Framework: Expo Router (file-based routing). All authenticated screens sit insid
 Root Stack
 ├── (auth)/                      # Unauthenticated stack
 │   ├── index                    # Welcome / splash
-│   ├── login                    # Log in form
-│   ├── signup                   # Sign up form
-│   ├── forgot-password          # Password reset
-│   └── onboarding/
-│       ├── role                 # Diver vs Instructor picker
-│       ├── cert-level           # Certification level picker
-│       ├── notifications        # Permission request explainer
-│       └── carousel             # Feature walkthrough (4 slides)
+│   ├── login                    # Sign in via dive-link API
+│   └── onboarding/              # First-sign-in only
+│       ├── certifications        # Read-only display of CMAS certs from dive-link
+│       ├── notifications         # Permission request explainer
+│       └── carousel              # Feature walkthrough (4 slides)
 │
 └── (app)/                       # Authenticated root
     ├── _layout                  # Tab bar: Home | Learn | Log | Profile | Instructor*
@@ -49,14 +48,14 @@ Root Stack
     │   │       └── edit         # Edit dive entry
     │   │
     │   ├── profile/
-    │   │   ├── index            # Profile hub
-    │   │   ├── edit             # Edit profile
+    │   │   ├── index            # Profile hub (certifications from dive-link + in-app stats)
+    │   │   ├── edit             # Edit app-only fields: avatar, home club
     │   │   ├── badges           # Badge gallery
     │   │   ├── stats            # Statistics dashboard
     │   │   ├── leaderboard      # Leaderboard (opt-in)
     │   │   └── settings         # App settings
     │   │
-    │   └── instructor/          # Role-gated: instructor only
+    │   └── instructor/          # Gated: visible only if authStore.identity.is_instructor === true
     │       ├── index            # Instructor dashboard (group list)
     │       ├── groups/
     │       │   ├── new          # Create group
@@ -66,10 +65,10 @@ Root Stack
     │       │       └── notify   # Send push to group
     │       └── students/
     │           └── [id]/
-    │               ├── index    # Student detail (progress breakdown)
-    │               ├── assign   # Assign module to student
-    │               ├── notify   # Send push to student
-    │               └── signoff  # Skill sign-off screen
+    │               ├── index              # Student detail (progress breakdown)
+    │               ├── assign             # Assign module to student
+    │               ├── notify             # Send push to student
+    │               └── practice-signoff   # Practice milestone sign-off screen
     │
     └── modal/
         ├── achievement-unlock   # Full-screen badge unlock modal
@@ -85,46 +84,30 @@ Root Stack
 **Purpose:** Entry point for unauthenticated users.
 **Elements:**
 - DiveLink logo + tagline
-- "Get Started" → `/signup`
-- "I already have an account" → `/login`
+- "Sign In" primary button → `/login`
+- "Create a dive-link account" link → opens dive-link website in browser (accounts are created there, not in this app)
 
 ---
 
-### `(auth)/login` — Log In
-**Purpose:** Authenticate returning user.
+### `(auth)/login` — Sign In
+**Purpose:** Authenticate against the dive-link API.
 **Elements:**
 - Email + password fields
-- "Forgot password?" link → `/forgot-password`
-- "Log In" primary button
-- "Don't have an account? Sign up" → `/signup`
-- Error inline below field on failure
+- "Sign In" primary button → calls `POST /api/v1/auth/login` on dive-link
+- Error inline below fields on failure
+- "Don't have an account?" → external link to dive-link website
+- Success: navigate to `/onboarding/certifications` (first sign-in) or `/(app)/(tabs)/home` (returning)
 
 ---
 
-### `(auth)/signup` — Sign Up
-**Purpose:** Create a new account.
+### `(auth)/onboarding/certifications` — CMAS Certifications Display
+**Purpose:** Show the user their real CMAS certifications retrieved from dive-link so they understand what content will be unlocked for them.
 **Elements:**
-- Display name, email, password, confirm password
-- Terms & privacy acknowledgment checkbox
-- "Create Account" → triggers account creation → `/onboarding/role`
-
----
-
-### `(auth)/onboarding/role` — Role Picker
-**Purpose:** Set user role for feature gating.
-**Elements:**
-- Two large cards: "I'm a Diver" / "I'm an Instructor"
-- Brief description under each
-- "Continue" → `/onboarding/cert-level`
-
----
-
-### `(auth)/onboarding/cert-level` — Cert Level Picker
-**Purpose:** Calibrate content and quiz difficulty.
-**Elements:**
-- Vertical list of cert levels with descriptions
-- "Just exploring (no cert)" option at top
+- Heading: "Your CMAS Certifications"
+- List of active certifications: discipline, level name, star rating badge, issue date
+- If no active certifications: "No certifications found — you'll see content for all levels. Once an instructor issues you a certification on dive-link, advanced content will unlock here."
 - "Continue" → `/onboarding/notifications`
+- This screen is read-only; no editing occurs here
 
 ---
 
@@ -142,7 +125,7 @@ Root Stack
 **Purpose:** Showcase key app features.
 **Slides:**
 1. Daily briefing + notification illustration
-2. Quizzes, XP, and streak
+2. Quizzes, XP, and streak — with a note that XP levels are a fun in-app system, separate from CMAS certifications
 3. Dive log and checklist
 4. Badges and achievements
 **Elements:**
@@ -154,10 +137,10 @@ Root Stack
 ### `(tabs)/home` — Home Screen
 **Purpose:** Daily engagement hub.
 **Sections (top to bottom):**
-1. **Header bar:** Display name, streak flame + count, XP level chip
+1. **Header bar:** Display name (from dive-link), streak flame + count, XP level chip
 2. **Today's Briefing card:** Do (green) / Don't (red) pair — tap either → card detail
 3. **"Quiz Yourself" CTA button:** → quick quiz session on today's cards
-4. **XP Progress bar:** Current level icon, XP fraction, next level name
+4. **XP Progress bar:** Current in-app level icon, XP fraction, next level name
 5. **Recent Activity feed:** Last 3 quiz sessions + last dive log entry
 6. **Active Assignments** (if any): Cards from instructor with due dates
 
@@ -214,7 +197,7 @@ Root Stack
 **Elements:**
 - Search bar (top)
 - Category chips (scrollable horizontal filter)
-- Cert level filter toggle
+- Cert tier filter toggle (derived from dive-link certifications)
 - Grid of category cards showing card count and mastery %
 - "Show all cards" flat list alternative
 
@@ -247,7 +230,7 @@ Root Stack
 ### `(tabs)/log/index` — Dive Log List
 **Purpose:** Chronological list of all logged dives.
 **Elements:**
-- "New Dive" FAB (floating action button) → checklist flow
+- "New Dive" FAB → checklist flow
 - Search / filter bar (date range, site, buddy)
 - Dive cards: site name, date, depth, duration, buddy
 - Total dive count in header
@@ -285,21 +268,31 @@ Root Stack
 **Elements:**
 - Photo gallery (swipeable if multiple)
 - All fields in a clean info list
-- Map pin if site has coordinates (future)
 - "Edit" and "Delete" actions (top-right menu)
 - "Share Dive" button → generates a summary image card
 
 ---
 
 ### `(tabs)/profile/index` — Profile Hub
-**Purpose:** Personal progress overview.
+**Purpose:** Personal progress overview combining dive-link identity and in-app stats.
 **Elements:**
-- Avatar + display name + cert level chip
-- Level badge (e.g., "Advanced Diver") + XP progress bar
+- Avatar + display name (from dive-link)
+- **CMAS Certifications** section: list of active certifications (from dive-link, read-only) with a "Manage on dive-link" link
+- In-app level badge + XP progress bar (from Supabase)
 - Streak count + "days" label
 - Total dives stat chip
 - Quick links: Badges, Stats, Dive Log
 - Settings icon → `/profile/settings`
+
+---
+
+### `(tabs)/profile/edit` — Edit App Profile
+**Purpose:** Edit fields owned by this app only.
+**Elements:**
+- Avatar picker (Supabase Storage)
+- Home dive club text field (Supabase)
+- Read-only section (labeled "From dive-link"): display name, email, role — with "Edit on dive-link" external link
+- Note: certification level is not editable here
 
 ---
 
@@ -330,14 +323,15 @@ Root Stack
 - **Notifications:** Daily reminder time picker, streak alert toggle
 - **Units:** Metric / Imperial toggle
 - **Leaderboard:** Opt-in toggle
-- **Account:** Change password, delete account (with confirmation flow)
-- **Log Out** (red, at bottom)
+- **Account:** Delete account (with confirmation flow)
+- **Log Out** (at bottom) — clears Expo SecureStore token and navigates to `/login`
 - App version number
 
 ---
 
 ### `(tabs)/instructor/index` — Instructor Dashboard
-**Purpose:** Overview of all student groups.
+**Purpose:** Overview of all student learning groups.
+**Access:** Only shown if `authStore.identity.is_instructor === true` (verified via dive-link API on session start).
 **Elements:**
 - "New Group" CTA
 - Group cards: name, student count, avg mastery %, last activity
@@ -346,7 +340,7 @@ Root Stack
 ---
 
 ### `(tabs)/instructor/groups/[id]/index` — Group Detail
-**Purpose:** Manage a student group.
+**Purpose:** Manage a student learning group.
 **Tabs:** Students | Assignments | Notifications
 **Students tab:**
 - Invite student button (by email)
@@ -358,13 +352,25 @@ Root Stack
 ### `(tabs)/instructor/students/[id]/index` — Student Detail
 **Purpose:** Per-student progress breakdown.
 **Elements:**
-- Student name + cert level
+- Student name
 - Overall mastery % ring
 - Mastery by category (list with % bars)
 - Recent quiz sessions (last 5)
 - Assigned modules + completion status
 - "Assign Module" and "Send Reminder" action buttons
-- "Sign Off Skill" button → signoff screen
+- "Practice Sign-Off" button → practice-signoff screen
+
+---
+
+### `(tabs)/instructor/students/[id]/practice-signoff` — Practice Sign-Off
+**Purpose:** Record that a student has practised a specific skill.
+**Elements:**
+- Heading: "Practice Milestone Record"
+- Subheading: "These are informal practice records. CMAS certifications are issued via dive-link."
+- Scrollable list of skill slugs grouped by category (e.g., "Mask clearing", "Emergency ascent reviewed")
+- Tap a skill row → confirm dialog: "Record that [student name] practised [skill]?"
+- On confirm: inserts row in `practice_signoffs` (Supabase)
+- Already signed-off skills shown with a checkmark and timestamp
 
 ---
 
@@ -382,11 +388,11 @@ Root Stack
 ---
 
 ### `modal/level-up` — Level Up Modal
-**Purpose:** Celebrate reaching a new level.
+**Purpose:** Celebrate reaching a new in-app level.
 **Elements:**
 - Confetti animation (Reanimated)
-- New level icon + name
-- "You're now an Advanced Diver!" headline
+- New in-app level icon + name
+- "You're now an Advanced Diver!" headline (labeled as in-app level)
 - XP total
 - "Keep Diving" dismiss button
 
@@ -400,7 +406,7 @@ Root Stack
 | Learn | book-open | Always |
 | Log | anchor | Always |
 | Profile | user-circle | Always |
-| Instructor | chalkboard-teacher | Instructor role only |
+| Instructor | chalkboard-teacher | `is_instructor === true` (from dive-link) only |
 
 ---
 

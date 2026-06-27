@@ -8,23 +8,25 @@ This document defines the taxonomy, sample content, and seeding strategy for the
 
 Each card belongs to exactly one category. Categories are ordered by when they're most relevant during a dive day.
 
-| Category Slug | Display Name | Primary Cert Levels |
+| Category Slug | Display Name | Min Cert Tier |
 |---|---|---|
-| `pre-dive` | Pre-Dive Planning | All |
-| `equipment-check` | Equipment Check | All |
-| `buddy-system` | Buddy System | All |
-| `descent` | Descent & Equalization | All |
-| `underwater` | Underwater Behavior | All |
-| `buoyancy` | Buoyancy Control | All |
-| `ascent` | Ascent & Safety Stops | All |
-| `emergency` | Emergency Procedures | All |
-| `navigation` | Underwater Navigation | Advanced+ |
-| `night-diving` | Night Diving | Advanced+ |
-| `deep-diving` | Deep Diving | Advanced+ |
-| `wreck-diving` | Wreck Diving | Advanced+ |
-| `nitrox` | Nitrox & Gas Management | Advanced+ |
-| `rescue` | Rescue & First Aid | Rescue+ |
-| `divemaster` | Dive Leadership | Divemaster+ |
+| `pre-dive` | Pre-Dive Planning | 0 (All) |
+| `equipment-check` | Equipment Check | 0 (All) |
+| `buddy-system` | Buddy System | 0 (All) |
+| `descent` | Descent & Equalization | 0 (All) |
+| `underwater` | Underwater Behavior | 0 (All) |
+| `buoyancy` | Buoyancy Control | 0 (All) |
+| `ascent` | Ascent & Safety Stops | 0 (All) |
+| `emergency` | Emergency Procedures | 0 (All) |
+| `navigation` | Underwater Navigation | 1 (1-Star+) |
+| `night-diving` | Night Diving | 1 (1-Star+) |
+| `deep-diving` | Deep Diving | 2 (2-Star+) |
+| `wreck-diving` | Wreck Diving | 2 (2-Star+) |
+| `nitrox` | Nitrox & Gas Management | 2 (2-Star+) |
+| `rescue` | Rescue & First Aid | 2 (2-Star+) |
+| `divemaster` | Dive Leadership | 3 (3-Star+) |
+
+`min_cert_tier` maps to CMAS star ratings: 0 = any, 1 = 1-star, 2 = 2-star, 3 = 3-star. The app derives the user's tier from their highest active CMAS certification fetched from the dive-link API.
 
 ---
 
@@ -35,7 +37,7 @@ type KnowledgeCard = {
   id: string                // slug, e.g. 'pre-dive-001'
   type: 'do' | 'dont'
   category: string          // category slug
-  min_cert_level: CertLevel
+  min_cert_tier: number     // 0=any, 1=1-star, 2=2-star, 3=3-star
   title: string             // ≤ 60 chars — shown in lists and notifications
   body: string              // 1–2 sentences — the rule
   explanation: string       // 2–4 sentences — the WHY
@@ -153,13 +155,13 @@ type KnowledgeCard = {
 
 ## Sample Quiz Questions
 
-### Q-001 (links to ASC-003)
+### Q-001 (links to ASC-001)
 - **Question:** What is the maximum recommended ascent rate for recreational divers?
 - **Options:** [A] 18 m/min, [B] 9 m/min, [C] 30 m/min, [D] 5 m/min
 - **Correct:** B
-- **Explanation:** PADI, SSI, and NAUI all recommend a maximum of 9 m/min (30 ft/min) for recreational divers. At this rate, dissolved nitrogen has sufficient time to safely off-gas through the lungs.
+- **Explanation:** The standard recommended maximum is 9 m/min (30 ft/min). At this rate, dissolved nitrogen has sufficient time to safely off-gas through the lungs.
 - **Difficulty:** easy
-- **Cert level:** open_water
+- **min_cert_tier:** 0
 
 ### Q-002 (links to ASC-002)
 - **Question:** At what depth should you perform a safety stop, and for how long?
@@ -167,31 +169,31 @@ type KnowledgeCard = {
 - **Correct:** C
 - **Explanation:** The standard safety stop is 3 minutes at 5 metres. This provides additional off-gassing time as an insurance policy against decompression sickness, even on no-decompression dives.
 - **Difficulty:** easy
-- **Cert level:** open_water
+- **min_cert_tier:** 0
 
 ### Q-003 (links to EMG-001)
 - **Question:** Why should you locate your buddy's weight release during the pre-dive check?
-- **Options:** [A] To adjust your own buoyancy, [B] So you can release their weights if they lose consciousness, [C] To ensure they have the correct amount of weight, [D] In case you need to share weights mid-dive]
+- **Options:** [A] To adjust your own buoyancy, [B] So you can release their weights if they lose consciousness, [C] To ensure they have the correct amount of weight, [D] In case you need to share weights mid-dive
 - **Correct:** B
 - **Explanation:** In an emergency where your buddy loses consciousness, you may need to ditch their weights to bring them to positive buoyancy and get them to the surface. Finding an unfamiliar release under stress wastes critical time.
 - **Difficulty:** medium
-- **Cert level:** open_water
+- **min_cert_tier:** 0
 
 ### Q-004
 - **Question:** What does the "A" in BWRAF stand for?
-- **Options:** [A] Anchor, [B] Ascent, [C] Air, [D] Anchor point]
+- **Options:** [A] Anchor, [B] Ascent, [C] Air, [D] Anchor point
 - **Correct:** C
 - **Explanation:** BWRAF = Buoyancy, Weights, Releases, Air, Final OK. The Air check covers verifying that the tank is open, the SPG reads full, and you can breathe from the regulator normally.
 - **Difficulty:** easy
-- **Cert level:** open_water
+- **min_cert_tier:** 0
 
 ### Q-005
 - **Question:** What happens to air in your lungs as you ascend?
-- **Options:** [A] It stays the same volume, [B] It compresses, [C] It expands, [D] It dissolves into your blood]
+- **Options:** [A] It stays the same volume, [B] It compresses, [C] It expands, [D] It dissolves into your blood
 - **Correct:** C
 - **Explanation:** According to Boyle's Law, as pressure decreases during ascent, gas volume increases. Air in your lungs expands as you rise. This is why continuous breathing (and never breath-holding) during ascent is the most fundamental rule in diving.
 - **Difficulty:** easy
-- **Cert level:** open_water
+- **min_cert_tier:** 0
 
 ---
 
@@ -208,15 +210,16 @@ type KnowledgeCard = {
 - Content reviewed by at least one certified dive instructor
 
 ### Seeding Process
-1. Cards authored in `data/knowledge-cards.ts` (TypeScript source)
+1. Cards authored in `data/knowledge-cards.ts` (TypeScript source of truth)
 2. `supabase/seed.ts` reads and upserts via service role client
 3. `npm run seed` command in development; runs automatically in staging CI
 4. Content updates deploy via Supabase migration (no app update required)
 
 ### Content Guidelines (for contributors)
-- **Title:** Action-oriented, ≤ 60 chars, starts with a verb for DO ("Check your SPG"), "Don't" prefix for DONT ("Don't bolt for the surface")
+- **Title:** Action-oriented, ≤ 60 chars, starts with a verb for DO; "Don't" prefix for DONT
 - **Body:** 1–2 sentences, plain language, no jargon without explanation
 - **Explanation:** Always answers "why", includes specific consequence, 2–4 sentences
+- **min_cert_tier:** 0 for universal rules; 1 for 1-star+ content; 2 for 2-star+; 3 for 3-star+
 - **Tags:** 3–5 tags from the approved tag list (see Appendix A)
 
 ---
