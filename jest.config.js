@@ -5,6 +5,12 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts?(x)'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    // Stub out native/Expo modules that can't run in Node
+    '^expo-notifications$': '<rootDir>/__mocks__/expo-notifications.ts',
+    '^expo-router$': '<rootDir>/__mocks__/expo-router.ts',
+    '^expo-status-bar$': '<rootDir>/__mocks__/expo-status-bar.ts',
+    '^@supabase/supabase-js$': '<rootDir>/__mocks__/@supabase/supabase-js.ts',
+    '^react-native$': '<rootDir>/__mocks__/react-native.ts',
   },
   globals: {
     'ts-jest': {

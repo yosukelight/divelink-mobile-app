@@ -27,7 +27,7 @@ export type LevelInfo = {
 }
 
 export function levelFromXp(xp: number): LevelInfo {
-  let current = LEVEL_THRESHOLDS[0]
+  let current: (typeof LEVEL_THRESHOLDS)[number] = LEVEL_THRESHOLDS[0]
   let currentIdx = 0
 
   for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
